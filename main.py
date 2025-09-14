@@ -16,9 +16,16 @@ from telegram.ext import (
 
 # Import our glass UI components
 from glass_ui import GlassUI
-from admin_service import AdminService
-from advanced_admin_panel import AdvancedAdminPanel
 from database import Database
+
+# Try to import admin services (optional)
+try:
+    from admin_service import AdminService
+    from advanced_admin_panel import AdvancedAdminPanel
+    ADMIN_AVAILABLE = True
+except ImportError:
+    ADMIN_AVAILABLE = False
+    print("Admin services not available - running in basic mode")
 
 # ---- لاگ گیری ----
 logging.basicConfig(
@@ -31,8 +38,14 @@ user_states = {}  # user_id -> mode
 
 # Initialize services
 db = Database()
-admin_service = AdminService(db)
-advanced_admin = AdvancedAdminPanel(db)
+
+# Initialize admin services if available
+if ADMIN_AVAILABLE:
+    admin_service = AdminService(db)
+    advanced_admin = AdvancedAdminPanel(db)
+else:
+    admin_service = None
+    advanced_admin = None
 
 # ---- استارت ----
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -134,133 +147,159 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     elif choice.startswith("admin_"):
         # Admin commands
-        if await admin_service.is_admin(user_id):
-            admin_choice = choice.replace("admin_", "")
-            
-            if admin_choice == "dashboard":
-                # نمایش داشبورد اصلی
-                dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
-                dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
-                reply_markup = advanced_admin.get_admin_keyboard()
-                await query.edit_message_text(dashboard_text, reply_markup=reply_markup, parse_mode='Markdown')
+        if ADMIN_AVAILABLE and admin_service and advanced_admin:
+            if await admin_service.is_admin(user_id):
+                admin_choice = choice.replace("admin_", "")
                 
-            elif admin_choice == "stats":
-                stats = await admin_service.get_bot_statistics()
-                stats_text = admin_service.format_statistics(stats)
-                await query.edit_message_text(stats_text, parse_mode='Markdown')
-                
-            elif admin_choice == "users":
-                reply_markup = advanced_admin.get_user_management_keyboard()
-                await query.edit_message_text(
-                    "👥 **مدیریت کاربران**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
-                    reply_markup=reply_markup,
-                    parse_mode='Markdown'
-                )
-                
-            elif admin_choice == "user_list":
-                user_data = await advanced_admin.manage_users("list", data={"page": 1, "limit": 10})
-                if user_data["success"]:
-                    users_text = admin_service.format_user_list(user_data)
-                    reply_markup = advanced_admin.get_user_management_keyboard(
-                        user_data["pagination"]["current_page"],
-                        user_data["pagination"]["total_pages"]
+                if admin_choice == "dashboard":
+                    # نمایش داشبورد اصلی
+                    dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
+                    dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
+                    reply_markup = advanced_admin.get_admin_keyboard()
+                    await query.edit_message_text(dashboard_text, reply_markup=reply_markup, parse_mode='Markdown')
+                    
+                elif admin_choice == "stats":
+                    stats = await admin_service.get_bot_statistics()
+                    stats_text = admin_service.format_statistics(stats)
+                    await query.edit_message_text(stats_text, parse_mode='Markdown')
+                    
+                elif admin_choice == "users":
+                    reply_markup = advanced_admin.get_user_management_keyboard()
+                    await query.edit_message_text(
+                        "👥 **مدیریت کاربران**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+                        reply_markup=reply_markup,
+                        parse_mode='Markdown'
                     )
-                    await query.edit_message_text(users_text, reply_markup=reply_markup, parse_mode='Markdown')
-                else:
-                    await query.edit_message_text(f"❌ خطا: {user_data['error']}")
                     
-            elif admin_choice == "broadcast":
-                reply_markup = advanced_admin.get_broadcast_keyboard()
-                await query.edit_message_text(
-                    "📢 **ارسال پیام گروهی**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
-                    reply_markup=reply_markup,
-                    parse_mode='Markdown'
-                )
-                
-            elif admin_choice == "settings":
-                reply_markup = advanced_admin.get_system_settings_keyboard()
-                await query.edit_message_text(
-                    "⚙️ **تنظیمات سیستم**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
-                    reply_markup=reply_markup,
-                    parse_mode='Markdown'
-                )
-                
-            elif admin_choice == "maintenance":
-                # تغییر حالت تعمیر
-                current_mode = advanced_admin.maintenance_mode
-                result = await advanced_admin.toggle_maintenance_mode(not current_mode)
-                if result["success"]:
-                    status = "فعال" if result["maintenance_mode"] else "غیرفعال"
-                    await query.edit_message_text(f"✅ حالت تعمیر {status} شد")
-                else:
-                    await query.edit_message_text(f"❌ خطا: {result['error']}")
+                elif admin_choice == "user_list":
+                    user_data = await advanced_admin.manage_users("list", data={"page": 1, "limit": 10})
+                    if user_data["success"]:
+                        users_text = admin_service.format_user_list(user_data)
+                        reply_markup = advanced_admin.get_user_management_keyboard(
+                            user_data["pagination"]["current_page"],
+                            user_data["pagination"]["total_pages"]
+                        )
+                        await query.edit_message_text(users_text, reply_markup=reply_markup, parse_mode='Markdown')
+                    else:
+                        await query.edit_message_text(f"❌ خطا: {user_data['error']}")
+                        
+                elif admin_choice == "broadcast":
+                    reply_markup = advanced_admin.get_broadcast_keyboard()
+                    await query.edit_message_text(
+                        "📢 **ارسال پیام گروهی**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+                        reply_markup=reply_markup,
+                        parse_mode='Markdown'
+                    )
                     
-            elif admin_choice == "cache":
-                # مدیریت کش
-                cache_stats = await advanced_admin.manage_cache("stats")
-                if cache_stats["success"]:
-                    stats = cache_stats["cache_stats"]
-                    cache_text = f"💾 **آمار کش**\n\n"
-                    cache_text += f"📊 کل ورودی‌ها: {stats.get('total_entries', 0)}\n"
-                    cache_text += f"✅ ورودی‌های فعال: {stats.get('active_entries', 0)}\n"
-                    cache_text += f"📈 نرخ موفقیت: {stats.get('hit_rate', 0):.1%}\n"
+                elif admin_choice == "settings":
+                    reply_markup = advanced_admin.get_system_settings_keyboard()
+                    await query.edit_message_text(
+                        "⚙️ **تنظیمات سیستم**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+                        reply_markup=reply_markup,
+                        parse_mode='Markdown'
+                    )
                     
-                    keyboard = [
-                        [
-                            GlassUI.get_glass_button("🗑️ پاک کردن کش منقضی", "admin_cache_clear", emoji="🗑️"),
-                            GlassUI.get_glass_button("🗑️ پاک کردن تمام کش", "admin_cache_clear_all", emoji="🗑️")
-                        ],
-                        [
-                            GlassUI.get_glass_button("🔙 بازگشت", "admin_settings", emoji="🔙")
+                elif admin_choice == "maintenance":
+                    # تغییر حالت تعمیر
+                    current_mode = advanced_admin.maintenance_mode
+                    result = await advanced_admin.toggle_maintenance_mode(not current_mode)
+                    if result["success"]:
+                        status = "فعال" if result["maintenance_mode"] else "غیرفعال"
+                        await query.edit_message_text(f"✅ حالت تعمیر {status} شد")
+                    else:
+                        await query.edit_message_text(f"❌ خطا: {result['error']}")
+                        
+                elif admin_choice == "cache":
+                    # مدیریت کش
+                    cache_stats = await advanced_admin.manage_cache("stats")
+                    if cache_stats["success"]:
+                        stats = cache_stats["cache_stats"]
+                        cache_text = f"💾 **آمار کش**\n\n"
+                        cache_text += f"📊 کل ورودی‌ها: {stats.get('total_entries', 0)}\n"
+                        cache_text += f"✅ ورودی‌های فعال: {stats.get('active_entries', 0)}\n"
+                        cache_text += f"📈 نرخ موفقیت: {stats.get('hit_rate', 0):.1%}\n"
+                        
+                        keyboard = [
+                            [
+                                GlassUI.get_glass_button("🗑️ پاک کردن کش منقضی", "admin_cache_clear", emoji="🗑️"),
+                                GlassUI.get_glass_button("🗑️ پاک کردن تمام کش", "admin_cache_clear_all", emoji="🗑️")
+                            ],
+                            [
+                                GlassUI.get_glass_button("🔙 بازگشت", "admin_settings", emoji="🔙")
+                            ]
                         ]
-                    ]
-                    reply_markup = InlineKeyboardMarkup(keyboard)
-                    await query.edit_message_text(cache_text, reply_markup=reply_markup, parse_mode='Markdown')
-                else:
-                    await query.edit_message_text(f"❌ خطا: {cache_stats['error']}")
+                        reply_markup = InlineKeyboardMarkup(keyboard)
+                        await query.edit_message_text(cache_text, reply_markup=reply_markup, parse_mode='Markdown')
+                    else:
+                        await query.edit_message_text(f"❌ خطا: {cache_stats['error']}")
+                        
+                elif admin_choice == "cache_clear":
+                    result = await advanced_admin.manage_cache("clear")
+                    await query.edit_message_text(f"✅ {result['message']}")
                     
-            elif admin_choice == "cache_clear":
-                result = await advanced_admin.manage_cache("clear")
-                await query.edit_message_text(f"✅ {result['message']}")
-                
-            elif admin_choice == "cache_clear_all":
-                result = await advanced_admin.manage_cache("clear_all")
-                await query.edit_message_text(f"✅ {result['message']}")
-                
-            elif admin_choice == "alerts":
-                alerts = await admin_service.get_all_alerts()
-                alerts_text = f"🚨 **هشدارهای فعال**\n\n"
-                alerts_text += f"📊 کل هشدارها: {alerts.get('total_alerts', 0)}\n"
-                alerts_text += f"👥 کاربران دارای هشدار: {alerts.get('users_with_alerts', 0)}\n"
-                await query.edit_message_text(alerts_text, parse_mode='Markdown')
-                
-            elif admin_choice == "logs":
-                logs = await admin_service.get_recent_logs()
-                logs_text = f"📋 **لاگ‌های اخیر**\n\n"
-                logs_text += logs.get("message", "لاگ‌گیری در این نسخه پیاده‌سازی نشده است")
-                await query.edit_message_text(logs_text, parse_mode='Markdown')
-                
-            elif admin_choice == "back_to_admin":
-                # بازگشت به پنل اصلی ادمین
-                dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
-                dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
-                reply_markup = advanced_admin.get_admin_keyboard()
-                await query.edit_message_text(dashboard_text, reply_markup=reply_markup, parse_mode='Markdown')
-                
+                elif admin_choice == "cache_clear_all":
+                    result = await advanced_admin.manage_cache("clear_all")
+                    await query.edit_message_text(f"✅ {result['message']}")
+                    
+                elif admin_choice == "alerts":
+                    alerts = await admin_service.get_all_alerts()
+                    alerts_text = f"🚨 **هشدارهای فعال**\n\n"
+                    alerts_text += f"📊 کل هشدارها: {alerts.get('total_alerts', 0)}\n"
+                    alerts_text += f"👥 کاربران دارای هشدار: {alerts.get('users_with_alerts', 0)}\n"
+                    await query.edit_message_text(alerts_text, parse_mode='Markdown')
+                    
+                elif admin_choice == "logs":
+                    logs = await admin_service.get_recent_logs()
+                    logs_text = f"📋 **لاگ‌های اخیر**\n\n"
+                    logs_text += logs.get("message", "لاگ‌گیری در این نسخه پیاده‌سازی نشده است")
+                    await query.edit_message_text(logs_text, parse_mode='Markdown')
+                    
+                elif admin_choice == "back_to_admin":
+                    # بازگشت به پنل اصلی ادمین
+                    dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
+                    dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
+                    reply_markup = advanced_admin.get_admin_keyboard()
+                    await query.edit_message_text(dashboard_text, reply_markup=reply_markup, parse_mode='Markdown')
+                    
+                else:
+                    await query.edit_message_text("🔧 این قابلیت در حال توسعه است")
             else:
-                await query.edit_message_text("🔧 این قابلیت در حال توسعه است")
+                await query.edit_message_text("❌ شما دسترسی ادمین ندارید")
         else:
-            await query.edit_message_text("❌ شما دسترسی ادمین ندارید")
+            await query.edit_message_text("❌ سرویس‌های مدیریت در دسترس نیست")
 
 # ---- هندل ورودی عادی ----
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
+    text = update.message.text.strip()
+    
+    # به‌روزرسانی فعالیت کاربر
+    db.update_user_activity(user_id)
+    
+    # اگر کاربر در حالت خاصی نیست، سعی کن خودکار تشخیص بده
     if user_id not in user_states:
-        await update.message.reply_text("اول از /start شروع کن 😊")
+        # تشخیص خودکار نوع درخواست
+        if any(word in text.lower() for word in ['usd', 'eur', 'gbp', 'irr', 'to']):
+            await convert_currency(update, text)
+        elif any(word in text.lower() for word in ['km', 'mile', 'kg', 'lb', 'celsius', 'fahrenheit']):
+            await convert_unit(update, text)
+        elif any(word in text.lower() for word in ['2024', '2025', '2023', '/', '-']):
+            await convert_date(update, text)
+        elif any(word in text.lower() for word in ['btc', 'eth', 'gold', 'silver', 'oil']):
+            await get_price(update, text)
+        else:
+            await update.message.reply_text(
+                "🔍 نمی‌تونم نوع درخواست شما رو تشخیص بدم!\n\n"
+                "لطفاً از منوی اصلی استفاده کنید یا یکی از فرمت‌های زیر را امتحان کنید:\n\n"
+                "💎 تبدیل ارز: `100 USD to IRR`\n"
+                "🔮 تبدیل واحد: `10 km to mile`\n"
+                "✨ تبدیل تاریخ: `2024-01-15`\n"
+                "💫 قیمت: `BTC` یا `GOLD`",
+                parse_mode='Markdown'
+            )
         return
 
     choice = user_states[user_id]
-    text = update.message.text.strip()
 
     try:
         if choice == "currency":
@@ -271,8 +310,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await convert_date(update, text)
         elif choice == "price":
             await get_price(update, text)
+        elif choice == "weather":
+            await get_weather(update, text)
+        elif choice == "calculator":
+            await calculate(update, text)
+        elif choice == "translate":
+            await translate_text(update, text)
     except Exception as e:
         await update.message.reply_text(f"❌ خطا: {e}")
+        print(f"Error in handle_message: {e}")
 
 # ---- تبدیل ارز ----
 async def convert_currency(update: Update, text: str):
@@ -325,7 +371,42 @@ async def convert_date(update: Update, text: str):
 # ---- قیمت لحظه‌ای ----
 async def get_price(update: Update, text: str):
     await update.message.reply_text(
-        f"🔍 داده قیمت برای '{text}' هنوز به API وصل نشده"
+        f"💫 داده قیمت برای '{text}' هنوز به API وصل نشده\n\n"
+        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!",
+        reply_markup=GlassUI.get_price_glass_keyboard()
+    )
+
+# ---- آب و هوا ----
+async def get_weather(update: Update, text: str):
+    await update.message.reply_text(
+        f"🌌 آب و هوای '{text}' هنوز به API وصل نشده\n\n"
+        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!"
+    )
+
+# ---- ماشین حساب ----
+async def calculate(update: Update, text: str):
+    try:
+        # محاسبه ساده
+        result = eval(text)
+        await update.message.reply_text(
+            f"🧿 **نتیجه محاسبه:**\n\n"
+            f"`{text} = {result}`",
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در محاسبه: {e}\n\n"
+            "💡 مثال‌های صحیح:\n"
+            "• `2 + 3 * 4`\n"
+            "• `10 / 2`\n"
+            "• `2 ** 3`"
+        )
+
+# ---- ترجمه ----
+async def translate_text(update: Update, text: str):
+    await update.message.reply_text(
+        f"🔮 ترجمه '{text}' هنوز به API وصل نشده\n\n"
+        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!"
     )
 
 # ---- داده ارسالی از مینی‌اپ ----
@@ -360,18 +441,22 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """دستور مدیریت"""
     user_id = update.message.from_user.id
-    if await admin_service.is_admin(user_id):
-        # نمایش داشبورد اصلی ادمین
-        dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
-        dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
-        reply_markup = advanced_admin.get_admin_keyboard()
-        await update.message.reply_text(
-            dashboard_text,
-            reply_markup=reply_markup,
-            parse_mode='Markdown'
-        )
+    
+    if ADMIN_AVAILABLE and admin_service and advanced_admin:
+        if await admin_service.is_admin(user_id):
+            # نمایش داشبورد اصلی ادمین
+            dashboard_data = await advanced_admin.get_admin_dashboard(user_id)
+            dashboard_text = advanced_admin.format_dashboard_message(dashboard_data)
+            reply_markup = advanced_admin.get_admin_keyboard()
+            await update.message.reply_text(
+                dashboard_text,
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+        else:
+            await update.message.reply_text("❌ شما دسترسی ادمین ندارید")
     else:
-        await update.message.reply_text("❌ شما دسترسی ادمین ندارید")
+        await update.message.reply_text("❌ سرویس‌های مدیریت در دسترس نیست")
 
 # ---- اجرای برنامه ----
 def main():

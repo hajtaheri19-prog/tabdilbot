@@ -1,3 +1,8 @@
+"""
+👑 Admin Service - سرویس مدیریت
+سرویس‌های مدیریتی برای ربات تبدیلا
+"""
+
 import logging
 import sqlite3
 from datetime import datetime, timedelta
@@ -7,7 +12,7 @@ import json
 logger = logging.getLogger(__name__)
 
 class AdminService:
-    """Admin panel and user management features"""
+    """سرویس مدیریت ربات"""
     
     def __init__(self, database):
         self.db = database
@@ -23,49 +28,50 @@ class AdminService:
         }
     
     async def is_admin(self, user_id: int) -> bool:
-        """Check if user is admin"""
-        # You can implement your own admin logic here
-        # For now, using a simple list from config
-        from config import Config
-        return user_id in Config.ADMIN_USER_IDS
+        """بررسی دسترسی ادمین"""
+        try:
+            from config import Config
+            return user_id in Config.ADMIN_USER_IDS
+        except:
+            return False
     
     async def get_bot_statistics(self) -> Dict[str, Any]:
-        """Get comprehensive bot statistics"""
+        """دریافت آمار جامع ربات"""
         try:
             with sqlite3.connect(self.db.db_path) as conn:
                 cursor = conn.cursor()
                 
-                # Total users
+                # کل کاربران
                 cursor.execute("SELECT COUNT(*) FROM users")
                 total_users = cursor.fetchone()[0]
                 
-                # Active users (last 24 hours)
+                # کاربران فعال (24 ساعت)
                 cursor.execute("""
                     SELECT COUNT(*) FROM users 
                     WHERE last_activity > datetime('now', '-1 day')
                 """)
                 active_users_24h = cursor.fetchone()[0]
                 
-                # Active users (last 7 days)
+                # کاربران فعال (7 روز)
                 cursor.execute("""
                     SELECT COUNT(*) FROM users 
                     WHERE last_activity > datetime('now', '-7 days')
                 """)
                 active_users_7d = cursor.fetchone()[0]
                 
-                # Total conversions
+                # کل تبدیلات
                 cursor.execute("SELECT COUNT(*) FROM conversion_history")
                 total_conversions = cursor.fetchone()[0]
                 
-                # Active alerts
+                # هشدارهای فعال
                 cursor.execute("SELECT COUNT(*) FROM price_alerts WHERE is_active = 1")
                 active_alerts = cursor.fetchone()[0]
                 
-                # Pending notifications
+                # اعلان‌های در انتظار
                 cursor.execute("SELECT COUNT(*) FROM notifications WHERE is_sent = 0")
                 pending_notifications = cursor.fetchone()[0]
                 
-                # Most used conversion types
+                # محبوب‌ترین تبدیلات
                 cursor.execute("""
                     SELECT conversion_type, COUNT(*) as count 
                     FROM conversion_history 
@@ -75,7 +81,7 @@ class AdminService:
                 """)
                 top_conversions = cursor.fetchall()
                 
-                # Recent registrations
+                # کاربران جدید (24 ساعت)
                 cursor.execute("""
                     SELECT COUNT(*) FROM users 
                     WHERE created_at > datetime('now', '-1 day')
@@ -105,12 +111,12 @@ class AdminService:
             }
     
     async def get_user_list(self, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
-        """Get list of users with pagination"""
+        """دریافت لیست کاربران با صفحه‌بندی"""
         try:
             with sqlite3.connect(self.db.db_path) as conn:
                 cursor = conn.cursor()
                 
-                # Get users with pagination
+                # دریافت کاربران با صفحه‌بندی
                 cursor.execute("""
                     SELECT user_id, username, first_name, last_name, 
                            created_at, last_activity 
@@ -121,7 +127,7 @@ class AdminService:
                 
                 users = cursor.fetchall()
                 
-                # Get total count
+                # تعداد کل
                 cursor.execute("SELECT COUNT(*) FROM users")
                 total_users = cursor.fetchone()[0]
                 
@@ -151,7 +157,7 @@ class AdminService:
             }
     
     async def get_user_details(self, user_id: int) -> Dict[str, Any]:
-        """Get detailed information about a specific user"""
+        """دریافت جزئیات کاربر"""
         try:
             user = self.db.get_user(user_id)
             if not user:
@@ -160,13 +166,13 @@ class AdminService:
                     "error": "User not found"
                 }
             
-            # Get user statistics
+            # آمار کاربر
             stats = self.db.get_user_stats(user_id)
             
-            # Get recent conversions
+            # تبدیلات اخیر
             recent_conversions = self.db.get_conversion_history(user_id, 10)
             
-            # Get user alerts
+            # هشدارهای کاربر
             alerts = [a for a in self.db.get_active_price_alerts() if a["user_id"] == user_id]
             
             return {
@@ -185,10 +191,10 @@ class AdminService:
             }
     
     async def broadcast_message(self, message: str, target_users: Optional[List[int]] = None) -> Dict[str, Any]:
-        """Broadcast message to users"""
+        """ارسال پیام گروهی"""
         try:
             if target_users is None:
-                # Broadcast to all users
+                # ارسال به همه کاربران
                 with sqlite3.connect(self.db.db_path) as conn:
                     cursor = conn.cursor()
                     cursor.execute("SELECT user_id FROM users")
@@ -199,7 +205,7 @@ class AdminService:
             
             for user_id in target_users:
                 try:
-                    # Add notification to database
+                    # اضافه کردن اعلان به پایگاه داده
                     self.db.add_notification(user_id, "broadcast", message)
                     success_count += 1
                 except Exception as e:
@@ -222,10 +228,9 @@ class AdminService:
             }
     
     async def toggle_maintenance_mode(self, enabled: bool) -> Dict[str, Any]:
-        """Toggle maintenance mode"""
+        """تغییر حالت تعمیر"""
         try:
-            # Update maintenance mode in database or config
-            # This is a simple implementation
+            # اینجا می‌توانید حالت تعمیر را در پایگاه داده ذخیره کنید
             maintenance_status = "enabled" if enabled else "disabled"
             
             return {
@@ -242,19 +247,19 @@ class AdminService:
             }
     
     async def manage_cache(self, action: str) -> Dict[str, Any]:
-        """Manage API cache"""
+        """مدیریت کش"""
         try:
             if action == "clear":
-                # Clear expired cache
-                self.db.cleanup_expired_cache()
+                # پاک کردن کش منقضی شده
+                deleted_count = self.db.cleanup_expired_cache()
                 
                 return {
                     "success": True,
-                    "message": "Expired cache entries cleared"
+                    "message": f"Expired cache entries cleared: {deleted_count}"
                 }
             
             elif action == "stats":
-                # Get cache statistics
+                # آمار کش
                 with sqlite3.connect(self.db.db_path) as conn:
                     cursor = conn.cursor()
                     cursor.execute("SELECT COUNT(*) FROM api_cache")
@@ -289,11 +294,11 @@ class AdminService:
             }
     
     async def get_all_alerts(self) -> Dict[str, Any]:
-        """Get all active price alerts"""
+        """دریافت تمام هشدارهای فعال"""
         try:
             alerts = self.db.get_active_price_alerts()
             
-            # Group by user
+            # گروه‌بندی بر اساس کاربر
             user_alerts = {}
             for alert in alerts:
                 user_id = alert["user_id"]
@@ -316,10 +321,10 @@ class AdminService:
             }
     
     async def get_recent_logs(self, limit: int = 100) -> Dict[str, Any]:
-        """Get recent log entries"""
+        """دریافت لاگ‌های اخیر"""
         try:
-            # This is a simple implementation
-            # In a real application, you'd read from log files or database
+            # این یک پیاده‌سازی ساده است
+            # در نسخه‌های آینده می‌توانید از فایل‌های لاگ واقعی استفاده کنید
             return {
                 "success": True,
                 "message": "Log viewing not implemented in this version",
@@ -334,7 +339,7 @@ class AdminService:
             }
     
     def format_statistics(self, stats: Dict[str, Any]) -> str:
-        """Format statistics for display"""
+        """فرمت کردن آمار برای نمایش"""
         if not stats["success"]:
             return f"❌ {stats['error']}"
         
@@ -364,7 +369,7 @@ class AdminService:
         return output
     
     def format_user_list(self, user_data: Dict[str, Any]) -> str:
-        """Format user list for display"""
+        """فرمت کردن لیست کاربران برای نمایش"""
         if not user_data["success"]:
             return f"❌ {user_data['error']}"
         
@@ -383,51 +388,3 @@ class AdminService:
             output += f"   🕐 آخرین فعالیت: {user['last_activity']}\n\n"
         
         return output
-    
-    def get_user_stats(self, user_id: int) -> Dict[str, Any]:
-        """Get user statistics (simplified version)"""
-        try:
-            with sqlite3.connect(self.db.db_path) as conn:
-                cursor = conn.cursor()
-                
-                # Get total conversions
-                cursor.execute("SELECT COUNT(*) FROM conversion_history WHERE user_id = ?", (user_id,))
-                total_conversions = cursor.fetchone()[0]
-                
-                # Get active alerts
-                cursor.execute("SELECT COUNT(*) FROM price_alerts WHERE user_id = ? AND is_active = 1", (user_id,))
-                active_alerts = cursor.fetchone()[0]
-                
-                # Get most used conversion type
-                cursor.execute("""
-                    SELECT conversion_type, COUNT(*) as count
-                    FROM conversion_history 
-                    WHERE user_id = ? 
-                    GROUP BY conversion_type
-                    ORDER BY count DESC
-                    LIMIT 1
-                """, (user_id,))
-                most_used = cursor.fetchone()
-                
-                if most_used:
-                    most_used_conversion = most_used[0]
-                    most_used_count = most_used[1]
-                else:
-                    most_used_conversion = None
-                    most_used_count = 0
-                
-                return {
-                    "total_conversions": total_conversions,
-                    "active_alerts": active_alerts,
-                    "most_used_conversion": most_used_conversion,
-                    "most_used_count": most_used_count
-                }
-                
-        except Exception as e:
-            logger.error(f"Error getting user stats: {e}")
-            return {
-                "total_conversions": 0,
-                "active_alerts": 0,
-                "most_used_conversion": None,
-                "most_used_count": 0
-            }
