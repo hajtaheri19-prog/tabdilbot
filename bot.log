@@ -1,0 +1,245 @@
+2025-09-14 23:15:37,894 - __main__ - INFO - Starting Simple Telegram Bot...
+2025-09-14 23:15:43,307 - __main__ - ERROR - Error starting bot: Timed out
+2025-09-14 23:16:40,628 - __main__ - INFO - Starting Telegram Bot...
+2025-09-14 23:16:41,199 - simple_bot - INFO - Starting Simple Telegram Bot...
+2025-09-14 23:16:46,214 - simple_bot - ERROR - Error starting bot: Timed out
+2025-09-14 23:23:50,448 - __main__ - INFO - Starting Advanced Telegram Bot...
+2025-09-14 23:23:51,141 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getMe "HTTP/1.1 200 OK"
+2025-09-14 23:23:51,141 - __main__ - INFO - Services initialized successfully
+2025-09-14 23:23:51,141 - notification_service - INFO - Notification service started
+2025-09-14 23:23:51,361 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-14 23:23:51,361 - telegram.ext.Application - INFO - Application started
+2025-09-14 23:23:52,175 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:23:52,483 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:23:52,483 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:02,385 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:02,643 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:03,388 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:03,388 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:09,686 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:10,614 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:10,621 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:19,992 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:24,843 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:25,692 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:25,692 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:30,692 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:31,754 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:31,756 - __main__ - ERROR - Error in smart message handling: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:32,062 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 200 OK"
+2025-09-14 23:24:36,518 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:36,740 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:36,744 - __main__ - ERROR - Error in smart message handling: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:36,946 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 200 OK"
+2025-09-14 23:24:38,767 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:38,971 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:24:38,972 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:24:41,747 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:42,042 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-09-14 23:24:42,422 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/editMessageText "HTTP/1.1 200 OK"
+2025-09-14 23:24:44,444 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:44,705 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-09-14 23:24:45,019 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/editMessageText "HTTP/1.1 200 OK"
+2025-09-14 23:24:49,091 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:49,368 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-09-14 23:24:49,704 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/editMessageText "HTTP/1.1 200 OK"
+2025-09-14 23:24:51,123 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:24:51,459 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-09-14 23:24:51,889 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/editMessageText "HTTP/1.1 200 OK"
+2025-09-14 23:25:01,339 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:05,924 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:06,934 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 400 Bad Request"
+2025-09-14 23:25:06,936 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_application.py", line 1184, in process_update
+    await coroutine
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_basehandler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "D:\bot\tel\advanced_bot.py", line 90, in start_command
+    await update.message.reply_text(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_message.py", line 1092, in reply_text
+    return await self.get_bot().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 2613, in send_message
+    return await super().send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 394, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 820, in send_message
+    return await self._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 517, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 572, in _send_message
+    result = await self._post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 482, in _post
+    return await self._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\ext\_extbot.py", line 335, in _do_post
+    return await super()._do_post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\_bot.py", line 510, in _do_post
+    return await request.post(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\h_taheri\AppData\Local\Programs\Python\Python310\lib\site-packages\telegram\request\_baserequest.py", line 325, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Inline keyboard button web app url 'https://your_domain_or_vercel_app' is invalid: wrong http url
+2025-09-14 23:25:16,190 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:26,397 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:36,652 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:46,851 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:25:57,074 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:07,250 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:17,523 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:27,813 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:30,018 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:30,891 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 200 OK"
+2025-09-14 23:26:40,228 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:40,578 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/getUpdates "HTTP/1.1 200 OK"
+2025-09-14 23:26:41,457 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ/sendMessage "HTTP/1.1 200 OK"
