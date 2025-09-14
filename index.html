@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مینی‌اپ تبدیلا</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>🔥 مینی‌اپ <span>تبدیلا</span></h1>
+        <button id="themeToggle"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>💱 تبدیل ارز</h2>
+            <div class="form-group">
+                <input type="number" id="amountCurrency" placeholder="مقدار">
+                <select id="fromCurrency">
+                    <option value="USD">دلار آمریکا</option>
+                    <option value="EUR">یورو</option>
+                    <option value="IRR">ریال ایران</option>
+                </select>
+                <span>به</span>
+                <select id="toCurrency">
+                    <option value="IRR">ریال ایران</option>
+                    <option value="USD">دلار آمریکا</option>
+                    <option value="EUR">یورو</option>
+                </select>
+            </div>
+            <button class="send-btn" onclick="sendCurrency()">ارسال به ربات</button>
+        </section>
+
+        <section class="card">
+            <h2>📏 تبدیل واحد</h2>
+            <div class="form-group">
+                <input type="number" id="amountUnit" placeholder="مقدار">
+                <select id="fromUnit">
+                    <option value="km">کیلومتر</option>
+                    <option value="mile">مایل</option>
+                </select>
+                <span>به</span>
+                <select id="toUnit">
+                    <option value="mile">مایل</option>
+                    <option value="km">کیلومتر</option>
+                </select>
+            </div>
+            <button class="send-btn" onclick="sendUnit()">ارسال به ربات</button>
+        </section>
+
+        <section class="card">
+            <h2>📅 تبدیل تاریخ</h2>
+            <div class="form-group">
+                <input type="date" id="gregDate">
+            </div>
+            <button class="send-btn" onclick="sendDate()">ارسال به ربات</button>
+        </section>
+    </main>
+</body>
+<script src="script.js"></script>
+</html>
