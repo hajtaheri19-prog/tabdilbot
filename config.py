@@ -59,7 +59,7 @@ class Config:
     }
     
     # Admin settings
-    ADMIN_USER_IDS = [123456789]  # Add your Telegram user ID here (replace with actual ID)
+    ADMIN_USER_IDS = []  # Add your Telegram user ID here (replace with actual ID)
     
     # Glass UI settings
     GLASS_THEME = "modern"  # classic, modern, neon, dark, golden, rainbow

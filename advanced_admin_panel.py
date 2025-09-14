@@ -150,7 +150,12 @@ class AdvancedAdminPanel:
                 
         except Exception as e:
             logger.error(f"Error getting comprehensive stats: {e}")
-            return {}
+            return {
+                "users": {"total": 0, "active_24h": 0, "active_7d": 0, "new_24h": 0},
+                "conversions": {"total": 0, "last_24h": 0, "avg_response_time": 0},
+                "alerts": {"active": 0, "pending_notifications": 0},
+                "top_conversions": []
+            }
     
     async def get_system_status(self) -> Dict[str, Any]:
         """وضعیت سیستم"""
