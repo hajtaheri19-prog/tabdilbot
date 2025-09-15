@@ -217,6 +217,16 @@ class GlassUI:
         return InlineKeyboardMarkup(keyboard)
     
     @staticmethod
+    def get_back_to_main_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد فقط با دکمه بازگشت به منوی اصلی"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("🔙 بازگشت به منوی اصلی", "back_to_main", emoji="🔙")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    @staticmethod
     def get_pagination_glass_keyboard(current_page: int, total_pages: int, 
                                     callback_prefix: str) -> InlineKeyboardMarkup:
         """کیبورد صفحه‌بندی شیشه‌ای"""
@@ -266,6 +276,22 @@ class GlassUI:
             ],
             [
                 KeyboardButton("🔮 ترجمه"), KeyboardButton("⚡ تنظیمات"), KeyboardButton("🌟 آمار")
+            ]
+        ]
+        return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
+
+    @staticmethod
+    def get_quick_keyboard_with_webapp() -> ReplyKeyboardMarkup:
+        """کیبورد سریع با دکمه مینی‌اپ برای نمایش کنار نوار تایپ"""
+        keyboard = [
+            [
+                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/"))
+            ],
+            [
+                KeyboardButton("💎 ارز"), KeyboardButton("🔮 واحد"), KeyboardButton("✨ تاریخ")
+            ],
+            [
+                KeyboardButton("💫 قیمت"), KeyboardButton("🌌 هوا"), KeyboardButton("🧿 حساب")
             ]
         ]
         return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
@@ -338,6 +364,8 @@ class GlassUI:
 💡 **نکته:** می‌تونید مستقیماً متن رو بفرستید و من خودکار تشخیص می‌دم که چه کاری می‌خواید انجام بدید!
 
 🌟 **تم شیشه‌ای فعال:** از تم شیشه‌ای زیبا و حرفه‌ای لذت ببرید!
+
+👨🏻‍💻 توسعه داده شده توسط **حسین طاهری**
         """
     
     @staticmethod

@@ -17,6 +17,9 @@ from telegram.ext import (
 # Import our glass UI components
 from glass_ui import GlassUI
 from database import Database
+from price_tracker import PriceTracker
+from weather_service import WeatherService
+from translation_service import TranslationService
 
 # Try to import admin services (optional)
 try:
@@ -38,6 +41,11 @@ user_states = {}  # user_id -> mode
 
 # Initialize services
 db = Database()
+
+# Initialize feature services
+price_tracker = PriceTracker(db)
+weather_service = WeatherService(db)
+translation_service = TranslationService(db)
 
 # Initialize admin services if available
 if ADMIN_AVAILABLE:
@@ -67,6 +75,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
+    # Also show quick reply keyboard with WebApp button near typing field
+    try:
+        await update.message.reply_text(
+            "✳️ از دکمه‌های سریع پایین هم می‌تونی استفاده کنی:",
+            reply_markup=GlassUI.get_quick_keyboard_with_webapp()
+        )
+    except Exception:
+        pass
+
 # ---- هندل کلیک منو ----
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -95,6 +112,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif choice == "date_convert":
         await query.edit_message_text(
             "✨ **تبدیل تاریخ**\n\nمثال: `2025-09-14` یا `15/01/2024`",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
             parse_mode='Markdown'
         )
     elif choice == "price":
@@ -107,16 +125,19 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif choice == "weather":
         await query.edit_message_text(
             "🌌 **آب و هوا**\n\nنام شهر را ارسال کنید یا موقعیت خود را به اشتراک بگذارید",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
             parse_mode='Markdown'
         )
     elif choice == "calculator":
         await query.edit_message_text(
             "🧿 **ماشین حساب**\n\nعبارت ریاضی را وارد کنید:\nمثال: `2 + 3 * 4` یا `sin(pi/2)`",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
             parse_mode='Markdown'
         )
     elif choice == "translate":
         await query.edit_message_text(
             "🔮 **ترجمه**\n\nمتن مورد نظر را ارسال کنید",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
             parse_mode='Markdown'
         )
     elif choice == "settings":
@@ -136,6 +157,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif choice == "alerts":
         await query.edit_message_text(
             "💥 **هشدارها**\n\nبرای مدیریت هشدارها، نام ارز یا کالا را ارسال کنید",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
             parse_mode='Markdown'
         )
     elif choice == "back_to_main":
@@ -330,12 +352,13 @@ async def convert_currency(update: Update, text: str):
         if res.get("result"):
             formatted = format_decimal(res["result"], locale="fa")
             await update.message.reply_text(
-                f"{amount} {from_curr.upper()} = {formatted} {to_curr.upper()}"
+                f"{amount} {from_curr.upper()} = {formatted} {to_curr.upper()}",
+                reply_markup=GlassUI.get_back_to_main_keyboard()
             )
         else:
-            await update.message.reply_text("⚠️ داده پیدا نشد.")
+            await update.message.reply_text("⚠️ داده پیدا نشد.", reply_markup=GlassUI.get_back_to_main_keyboard())
     except Exception:
-        await update.message.reply_text("❌ فرمت اشتباه. مثال: 100 USD to IRR")
+        await update.message.reply_text("❌ فرمت اشتباه. مثال: 100 USD to IRR", reply_markup=GlassUI.get_back_to_main_keyboard())
 
 # ---- تبدیل واحد ----
 async def convert_unit(update: Update, text: str):
@@ -348,11 +371,11 @@ async def convert_unit(update: Update, text: str):
         key = (from_unit.lower(), to_unit.lower())
         if key in units:
             result = float(amount) * units[key]
-            await update.message.reply_text(f"{amount} {from_unit} = {result} {to_unit}")
+            await update.message.reply_text(f"{amount} {from_unit} = {result} {to_unit}", reply_markup=GlassUI.get_back_to_main_keyboard())
         else:
-            await update.message.reply_text("⚠️ این واحد پشتیبانی نمی‌شود.")
+            await update.message.reply_text("⚠️ این واحد پشتیبانی نمی‌شود.", reply_markup=GlassUI.get_back_to_main_keyboard())
     except Exception:
-        await update.message.reply_text("❌ فرمت اشتباه. مثال: 10 km to mile")
+        await update.message.reply_text("❌ فرمت اشتباه. مثال: 10 km to mile", reply_markup=GlassUI.get_back_to_main_keyboard())
 
 # ---- تبدیل تاریخ ----
 async def convert_date(update: Update, text: str):
@@ -363,25 +386,31 @@ async def convert_date(update: Update, text: str):
         hijri_date = greg.to_hijri()
         await update.message.reply_text(
             f"📅 شمسی: {persian_date.strftime('%Y/%m/%d')}\n"
-            f"🕋 قمری: {hijri_date}"
+            f"🕋 قمری: {hijri_date}",
+            reply_markup=GlassUI.get_back_to_main_keyboard()
         )
     except Exception:
-        await update.message.reply_text("❌ فرمت اشتباه. مثال: 2025-09-14")
+        await update.message.reply_text("❌ فرمت اشتباه. مثال: 2025-09-14", reply_markup=GlassUI.get_back_to_main_keyboard())
 
 # ---- قیمت لحظه‌ای ----
 async def get_price(update: Update, text: str):
+    # Try to detect crypto tickers first (common ones), else show info text
+    symbol = text.strip().upper()
+    result = await price_tracker.get_crypto_price(symbol)
+    if result.get("success"):
+        msg = price_tracker.format_price_result(result)
+        await update.message.reply_text(msg, parse_mode='Markdown', reply_markup=GlassUI.get_back_to_main_keyboard())
+        return
     await update.message.reply_text(
-        f"💫 داده قیمت برای '{text}' هنوز به API وصل نشده\n\n"
-        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!",
-        reply_markup=GlassUI.get_price_glass_keyboard()
+        f"💫 داده قیمت برای '{text}' در حال حاضر در دسترس نیست",
+        reply_markup=GlassUI.get_back_to_main_keyboard()
     )
 
 # ---- آب و هوا ----
 async def get_weather(update: Update, text: str):
-    await update.message.reply_text(
-        f"🌌 آب و هوای '{text}' هنوز به API وصل نشده\n\n"
-        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!"
-    )
+    result = await weather_service.get_current_weather(text)
+    msg = weather_service.format_weather_result(result)
+    await update.message.reply_text(msg, parse_mode='Markdown', reply_markup=GlassUI.get_back_to_main_keyboard())
 
 # ---- ماشین حساب ----
 async def calculate(update: Update, text: str):
@@ -391,7 +420,8 @@ async def calculate(update: Update, text: str):
         await update.message.reply_text(
             f"🧿 **نتیجه محاسبه:**\n\n"
             f"`{text} = {result}`",
-            parse_mode='Markdown'
+            parse_mode='Markdown',
+            reply_markup=GlassUI.get_back_to_main_keyboard()
         )
     except Exception as e:
         await update.message.reply_text(
@@ -399,15 +429,15 @@ async def calculate(update: Update, text: str):
             "💡 مثال‌های صحیح:\n"
             "• `2 + 3 * 4`\n"
             "• `10 / 2`\n"
-            "• `2 ** 3`"
+            "• `2 ** 3`",
+            reply_markup=GlassUI.get_back_to_main_keyboard()
         )
 
 # ---- ترجمه ----
 async def translate_text(update: Update, text: str):
-    await update.message.reply_text(
-        f"🔮 ترجمه '{text}' هنوز به API وصل نشده\n\n"
-        "🔮 این قابلیت در نسخه‌های آینده اضافه خواهد شد!"
-    )
+    result = await translation_service.translate_text(text, target_lang="fa")
+    msg = translation_service.format_translation_result(result)
+    await update.message.reply_text(msg, parse_mode='Markdown', reply_markup=GlassUI.get_back_to_main_keyboard())
 
 # ---- داده ارسالی از مینی‌اپ ----
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
