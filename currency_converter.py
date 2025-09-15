@@ -35,7 +35,7 @@ class CurrencyConverter:
         
         # Check cache first
         cache_key = f"currency_{from_currency}_{to_currency}_{datetime.now().strftime('%Y%m%d%H')}"
-        cached_rate = self.db.get_cached_response(cache_key)
+        cached_rate = self.db.get_from_cache(cache_key)
         
         if cached_rate:
             try:
@@ -70,7 +70,7 @@ class CurrencyConverter:
                         "rate": result["rate"],
                         "timestamp": result.get("timestamp", datetime.now().isoformat())
                     }
-                    self.db.cache_api_response(cache_key, json.dumps(cache_data), 60)
+                    self.db.add_to_cache(cache_key, json.dumps(cache_data), 60)
                     return result
             except Exception as e:
                 logger.warning(f"API {api_func.__name__} failed: {e}")
@@ -187,7 +187,7 @@ class CurrencyConverter:
         
         # Check cache
         cache_key = f"crypto_{symbol}_{convert_to}_{datetime.now().strftime('%Y%m%d%H%M')}"
-        cached_price = self.db.get_cached_response(cache_key)
+        cached_price = self.db.get_from_cache(cache_key)
         
         if cached_price:
             try:
@@ -213,7 +213,7 @@ class CurrencyConverter:
                         "price": result["price"],
                         "timestamp": result["timestamp"]
                     }
-                    self.db.cache_api_response(cache_key, json.dumps(cache_data), 5)
+                    self.db.add_to_cache(cache_key, json.dumps(cache_data), 5)
                     return result
             except Exception as e:
                 logger.warning(f"CoinMarketCap API failed: {e}")
@@ -226,7 +226,7 @@ class CurrencyConverter:
                     "price": result["price"],
                     "timestamp": result["timestamp"]
                 }
-                self.db.cache_api_response(cache_key, json.dumps(cache_data), 5)
+                self.db.add_to_cache(cache_key, json.dumps(cache_data), 5)
                 return result
         except Exception as e:
             logger.warning(f"CoinGecko API failed: {e}")
@@ -322,7 +322,7 @@ class CurrencyConverter:
     async def get_exchange_rates(self, base_currency: str = "USD") -> Dict[str, any]:
         """Get all exchange rates for a base currency"""
         cache_key = f"rates_{base_currency}_{datetime.now().strftime('%Y%m%d%H')}"
-        cached_rates = self.db.get_cached_response(cache_key)
+        cached_rates = self.db.get_from_cache(cache_key)
         
         if cached_rates:
             try:
@@ -338,7 +338,7 @@ class CurrencyConverter:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("success"):
-                        self.db.cache_api_response(cache_key, json.dumps(data), 60)
+                        self.db.add_to_cache(cache_key, json.dumps(data), 60)
                         return data
         
         return {"success": False, "error": "Failed to get exchange rates"}

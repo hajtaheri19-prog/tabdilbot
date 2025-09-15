@@ -114,20 +114,24 @@ class GlassUI:
         """کیبورد قیمت‌گذاری شیشه‌ای"""
         keyboard = [
             [
-                GlassUI.get_glass_button("📈 سهام", "stock_price", emoji="💎"),
-                GlassUI.get_glass_button("₿ ارز دیجیتال", "crypto_price", emoji="🔮")
+                GlassUI.get_glass_button("💰 ارزهای دیجیتال (USD)", "price_crypto_usd", emoji="💎"),
+                GlassUI.get_glass_button("🌐 ارزهای دیجیتال (IRR)", "price_crypto_irr", emoji="🔮")
             ],
             [
-                GlassUI.get_glass_button("🏆 برترین ارزها", "top_crypto", emoji="✨"),
-                GlassUI.get_glass_button("📋 لیست ارزها", "crypto_list", emoji="💫")
+                GlassUI.get_glass_button("🏦 دارایی‌ها (TGJU)", "price_tgju", emoji="✨"),
+                GlassUI.get_glass_button("📊 همه قیمت‌ها", "price_all", emoji="💫")
             ],
             [
-                GlassUI.get_glass_button("🥇 کالا", "commodity_price", emoji="🌟"),
-                GlassUI.get_glass_button("📊 خلاصه بازار", "market_summary", emoji="💥")
+                GlassUI.get_glass_button("📈 سهام", "stock_price", emoji="🌟"),
+                GlassUI.get_glass_button("🥇 کالا", "commodity_price", emoji="💥")
             ],
             [
-                GlassUI.get_glass_button("📈 نمودار قیمت", "price_chart", emoji="🔮"),
-                GlassUI.get_glass_button("🚨 هشدار قیمت", "price_alert", emoji="✨")
+                GlassUI.get_glass_button("🏆 برترین ارزها", "top_crypto", emoji="🔮"),
+                GlassUI.get_glass_button("📋 لیست ارزها", "crypto_list", emoji="✨")
+            ],
+            [
+                GlassUI.get_glass_button("📈 نمودار قیمت", "price_chart", emoji="💫"),
+                GlassUI.get_glass_button("🚨 هشدار قیمت", "price_alert", emoji="🌟")
             ],
             [
                 GlassUI.get_glass_button("🔙 بازگشت", "back_to_main", emoji="🔙")
@@ -258,6 +262,9 @@ class GlassUI:
             ],
             [
                 KeyboardButton("🔮 ترجمه"), KeyboardButton("⚡ تنظیمات"), KeyboardButton("🌟 آمار")
+            ],
+            [
+                KeyboardButton("🔄 شروع مجدد")
             ]
         ]
         return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
@@ -274,6 +281,9 @@ class GlassUI:
             ],
             [
                 KeyboardButton("💫 قیمت"), KeyboardButton("🌌 هوا"), KeyboardButton("🧿 حساب")
+            ],
+            [
+                KeyboardButton("🔄 شروع مجدد")
             ]
         ]
         return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)

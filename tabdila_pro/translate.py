@@ -33,3 +33,10 @@ def translate(text: str, src: str = "auto", dest: str = "en") -> Dict[str, Any]:
         return _safe(False, error=str(e))
 
 
+
+
+
+
+
+
+

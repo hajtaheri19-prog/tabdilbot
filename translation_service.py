@@ -59,7 +59,7 @@ class TranslationService:
         
         # Check cache
         cache_key = f"translate_{hash(text)}_{source_lang}_{target_lang}"
-        cached_translation = self.db.get_cached_response(cache_key)
+        cached_translation = self.db.get_from_cache(cache_key)
         
         if cached_translation:
             try:
@@ -79,7 +79,7 @@ class TranslationService:
                 result = await service_func(text, target_lang, source_lang)
                 if result["success"]:
                     # Cache for 24 hours
-                    self.db.cache_api_response(cache_key, json.dumps(result), 1440)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 1440)
                     return result
             except Exception as e:
                 logger.warning(f"Translation service failed: {e}")

@@ -6,6 +6,11 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import logging
 
+# Import new price sources
+from binance_popular import get_popular_data
+from tgju import fetch_mofid_basket
+from crypto_prices import fetch_top_cryptos
+
 logger = logging.getLogger(__name__)
 
 class PriceTracker:
@@ -48,7 +53,7 @@ class PriceTracker:
         
         # Check cache first
         cache_key = f"stock_{symbol}_{datetime.now().strftime('%Y%m%d%H%M')}"
-        cached_price = self.db.get_cached_response(cache_key)
+        cached_price = self.db.get_from_cache(cache_key)
         
         if cached_price:
             try:
@@ -68,7 +73,7 @@ class PriceTracker:
                 result = await api_func(symbol)
                 if result["success"]:
                     # Cache for 5 minutes
-                    self.db.cache_api_response(cache_key, json.dumps(result), 5)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 5)
                     return result
             except Exception as e:
                 logger.warning(f"Stock API {api_func.__name__} failed: {e}")
@@ -188,7 +193,7 @@ class PriceTracker:
         
         # Check cache
         cache_key = f"crypto_{symbol}_{datetime.now().strftime('%Y%m%d%H%M')}"
-        cached_price = self.db.get_cached_response(cache_key)
+        cached_price = self.db.get_from_cache(cache_key)
         
         if cached_price:
             try:
@@ -210,7 +215,7 @@ class PriceTracker:
                 result = await api_func(symbol)
                 if result["success"]:
                     # Cache for 2 minutes
-                    self.db.cache_api_response(cache_key, json.dumps(result), 2)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 2)
                     return result
             except Exception as e:
                 logger.warning(f"Crypto API {api_func.__name__} failed: {e}")
@@ -532,7 +537,7 @@ class PriceTracker:
         
         # Check cache
         cache_key = f"commodity_{commodity}_{datetime.now().strftime('%Y%m%d%H%M')}"
-        cached_price = self.db.get_cached_response(cache_key)
+        cached_price = self.db.get_from_cache(cache_key)
         
         if cached_price:
             try:
@@ -545,7 +550,7 @@ class PriceTracker:
             try:
                 result = await self._get_alpha_vantage_commodity(commodity)
                 if result["success"]:
-                    self.db.cache_api_response(cache_key, json.dumps(result), 10)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 10)
                     return result
             except Exception as e:
                 logger.warning(f"Commodity API failed: {e}")
@@ -660,7 +665,7 @@ class PriceTracker:
         
         # Check cache
         cache_key = f"history_{symbol}_{period}_{datetime.now().strftime('%Y%m%d%H')}"
-        cached_history = self.db.get_cached_response(cache_key)
+        cached_history = self.db.get_from_cache(cache_key)
         
         if cached_history:
             try:
@@ -673,7 +678,7 @@ class PriceTracker:
             result = await self._get_yahoo_finance_history(symbol, period)
             if result["success"]:
                 # Cache for 1 hour
-                self.db.cache_api_response(cache_key, json.dumps(result), 60)
+                self.db.add_to_cache(cache_key, json.dumps(result), 60)
                 return result
         except Exception as e:
             logger.warning(f"Historical data API failed: {e}")
@@ -828,3 +833,193 @@ class PriceTracker:
         output += f"🕐 زمان: {result['timestamp']}"
         
         return output
+    
+    # New methods for integrated price sources
+    
+    async def get_integrated_price_data(self) -> Dict[str, Any]:
+        """Get comprehensive price data from all sources"""
+        try:
+            # Get data from all sources concurrently
+            tasks = [
+                self._get_binance_popular_data(),
+                self._get_tgju_data(),
+                self._get_crypto_irr_data()
+            ]
+            
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            binance_data, tgju_data, crypto_irr_data = results
+            
+            # Handle exceptions
+            if isinstance(binance_data, Exception):
+                binance_data = {"success": False, "error": str(binance_data)}
+            if isinstance(tgju_data, Exception):
+                tgju_data = {"success": False, "error": str(tgju_data)}
+            if isinstance(crypto_irr_data, Exception):
+                crypto_irr_data = {"success": False, "error": str(crypto_irr_data)}
+            
+            return {
+                "success": True,
+                "binance_popular": binance_data,
+                "tgju_assets": tgju_data,
+                "crypto_irr": crypto_irr_data,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_integrated_price_data: {e}")
+            return {
+                "success": False,
+                "error": f"Failed to get integrated price data: {str(e)}",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def _get_binance_popular_data(self) -> Dict[str, Any]:
+        """Get popular crypto data from Binance/CoinGecko"""
+        try:
+            # Check cache first
+            cache_key = f"binance_popular_{datetime.now().strftime('%Y%m%d%H%M')}"
+            cached_data = self.db.get_from_cache(cache_key)
+            
+            if cached_data:
+                try:
+                    return json.loads(cached_data)
+                except json.JSONDecodeError:
+                    pass
+            
+            # Get fresh data
+            result = get_popular_data()
+            
+            if result["success"]:
+                # Cache for 5 minutes
+                self.db.add_to_cache(cache_key, json.dumps(result), 5)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting Binance popular data: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def _get_tgju_data(self) -> Dict[str, Any]:
+        """Get TGJU asset data"""
+        try:
+            # Check cache first
+            cache_key = f"tgju_assets_{datetime.now().strftime('%Y%m%d%H%M')}"
+            cached_data = self.db.get_from_cache(cache_key)
+            
+            if cached_data:
+                try:
+                    return json.loads(cached_data)
+                except json.JSONDecodeError:
+                    pass
+            
+            # Get fresh data
+            result = fetch_mofid_basket()
+            
+            if result["success"]:
+                # Cache for 10 minutes
+                self.db.add_to_cache(cache_key, json.dumps(result), 10)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting TGJU data: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def _get_crypto_irr_data(self) -> Dict[str, Any]:
+        """Get crypto prices in IRR from TGJU"""
+        try:
+            # Check cache first
+            cache_key = f"crypto_irr_{datetime.now().strftime('%Y%m%d%H%M')}"
+            cached_data = self.db.get_from_cache(cache_key)
+            
+            if cached_data:
+                try:
+                    return json.loads(cached_data)
+                except json.JSONDecodeError:
+                    pass
+            
+            # Get fresh data
+            result = fetch_top_cryptos(limit=10)
+            
+            if result["success"]:
+                # Cache for 5 minutes
+                self.db.add_to_cache(cache_key, json.dumps(result), 5)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting crypto IRR data: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def format_integrated_price_message(self, data: Dict[str, Any]) -> str:
+        """Format comprehensive price message"""
+        if not data["success"]:
+            return f"❌ {data['error']}"
+        
+        message = "📈 **قیمت‌های لحظه‌ای جامع**\n\n"
+        
+        # Binance Popular (USD)
+        binance_data = data["binance_popular"]
+        if binance_data["success"] and binance_data.get("popular"):
+            message += "💰 **ارزهای دیجیتال محبوب (USD)**:\n"
+            for coin in binance_data["popular"]:
+                change_emoji = "📈" if coin["change_percent_24h"] >= 0 else "📉"
+                change_sign = "+" if coin["change_percent_24h"] >= 0 else ""
+                message += (
+                    f"• {coin['name']} ({coin['symbol']}): ${coin['price_usd']:,.2f} "
+                    f"{change_emoji} {change_sign}{coin['change_percent_24h']:.2f}%\n"
+                )
+            message += "\n"
+        
+        # TGJU Assets (IRR)
+        tgju_data = data["tgju_assets"]
+        if tgju_data["success"] and tgju_data.get("data"):
+            message += "🏦 **دارایی‌ها (IRR)**:\n"
+            for title, asset_data in tgju_data["data"].items():
+                price = asset_data["price"]
+                change = asset_data["change"]
+                if price is not None:
+                    message += f"• {title}: {price:,.0f} ({change})\n"
+                else:
+                    message += f"• {title}: نامشخص ({change})\n"
+            message += "\n"
+        
+        # Crypto IRR
+        crypto_irr_data = data["crypto_irr"]
+        if crypto_irr_data["success"] and crypto_irr_data.get("data"):
+            message += "🌐 **ارزهای دیجیتال (IRR)**:\n"
+            for name, crypto_data in crypto_irr_data["data"].items():
+                price = crypto_data["price_rial"]
+                change_percent = crypto_data["change_percent"]
+                change_value = crypto_data["change_value_tether"]
+                
+                if price is not None:
+                    change_emoji = "📈" if change_percent and change_percent >= 0 else "📉"
+                    change_sign = "+" if change_percent and change_percent >= 0 else ""
+                    change_text = f"{change_sign}{change_percent:.2f}%" if change_percent is not None else "نامشخص"
+                    message += f"• {name}: {price:,.0f} {change_emoji} {change_text} ({change_value})\n"
+                else:
+                    message += f"• {name}: نامشخص ({change_value})\n"
+        
+        message += f"\n🕐 زمان: {data['timestamp']}"
+        return message
+    
+    def create_price_selection_keyboard(self):
+        """Create keyboard for price source selection"""
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        
+        keyboard = [
+            [
+                InlineKeyboardButton("💰 ارزهای دیجیتال (USD)", callback_data="price_crypto_usd"),
+                InlineKeyboardButton("🌐 ارزهای دیجیتال (IRR)", callback_data="price_crypto_irr")
+            ],
+            [
+                InlineKeyboardButton("🏦 دارایی‌ها (TGJU)", callback_data="price_tgju"),
+                InlineKeyboardButton("📊 همه قیمت‌ها", callback_data="price_all")
+            ],
+            [
+                InlineKeyboardButton("🔙 بازگشت", callback_data="back_to_main")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)

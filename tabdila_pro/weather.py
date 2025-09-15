@@ -38,3 +38,10 @@ def get_weather(city: str = "Tehran", lang: str = "fa") -> Dict[str, Any]:
         return _safe(False, error=str(e))
 
 
+
+
+
+
+
+
+

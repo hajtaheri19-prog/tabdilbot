@@ -18,6 +18,7 @@ from telegram.ext import (
 from glass_ui import GlassUI
 from database import Database
 from price_tracker import PriceTracker
+from currency_converter import CurrencyConverter
 from weather_service import WeatherService
 from translation_service import TranslationService
 from tabdila_pro.prices import fetch_mofid_basket, get_popular_crypto
@@ -45,6 +46,7 @@ db = Database()
 
 # Initialize feature services
 price_tracker = PriceTracker(db)
+currency_converter = CurrencyConverter(db)
 weather_service = WeatherService(db)
 translation_service = TranslationService(db)
 
@@ -65,16 +67,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                      update.message.from_user.first_name, 
                      update.message.from_user.last_name)
     
-    # Get glass keyboard
+    # Get glass keyboard and show welcome
     reply_markup = GlassUI.get_main_glass_keyboard()
-    
-    # Send welcome message with glass UI
     welcome_text = GlassUI.format_glass_welcome_message()
-    await update.message.reply_text(
-        welcome_text,
-        reply_markup=reply_markup,
-        parse_mode='Markdown'
-    )
+    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode='Markdown')
 
     # Show feedback/report buttons
     try:
@@ -85,7 +81,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception:
         pass
 
-    # Also show quick reply keyboard with WebApp button near typing field
+    # Also show quick reply keyboard with WebApp + restart near typing field
     try:
         await update.message.reply_text(
             "✳️ از دکمه‌های سریع پایین هم می‌تونی استفاده کنی:",
@@ -93,6 +89,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except Exception:
         pass
+
+async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """دستور شروع مجدد"""
+    # Reset user state if any
+    user_id = update.effective_user.id
+    if user_id in user_states:
+        del user_states[user_id]
+    # Show same flow as start
+    await start(update, context)
 
 # ---- هندل کلیک منو ----
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -147,6 +152,14 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup,
             parse_mode='Markdown'
         )
+    elif choice == "price_crypto_usd":
+        await show_crypto_usd_prices(query)
+    elif choice == "price_crypto_irr":
+        await show_crypto_irr_prices(query)
+    elif choice == "price_tgju":
+        await show_tgju_prices(query)
+    elif choice == "price_all":
+        await show_all_prices(query)
     elif choice == "weather":
         await query.edit_message_text(
             "🌌 **آب و هوا**\n\nنام شهر را ارسال کنید یا موقعیت خود را به اشتراک بگذارید",
@@ -391,17 +404,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def convert_currency(update: Update, text: str):
     try:
         amount, from_curr, _, to_curr = text.split()
-        url = f"https://api.exchangerate.host/convert?from={from_curr.upper()}&to={to_curr.upper()}&amount={amount}"
-        res = requests.get(url).json()
-
-        if res.get("result"):
-            formatted = format_decimal(res["result"], locale="fa")
+        amount_val = float(amount)
+        result = await currency_converter.convert_currency(amount_val, from_curr, to_curr)
+        if result.get("success"):
+            formatted = format_decimal(result["result"], locale="fa")
             await update.message.reply_text(
                 f"{amount} {from_curr.upper()} = {formatted} {to_curr.upper()}",
                 reply_markup=GlassUI.get_back_to_main_keyboard()
             )
         else:
-            await update.message.reply_text("⚠️ داده پیدا نشد.", reply_markup=GlassUI.get_back_to_main_keyboard())
+            await update.message.reply_text(f"❌ {result.get('error','داده پیدا نشد')}", reply_markup=GlassUI.get_back_to_main_keyboard())
     except Exception:
         await update.message.reply_text("❌ فرمت اشتباه. مثال: 100 USD to IRR", reply_markup=GlassUI.get_back_to_main_keyboard())
 
@@ -603,6 +615,130 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❌ سرویس‌های مدیریت در دسترس نیست")
 
+# New price handler functions
+async def show_crypto_usd_prices(query):
+    """Show crypto prices in USD"""
+    try:
+        result = await price_tracker._get_binance_popular_data()
+        if result["success"] and result.get("popular"):
+            message = "💰 **ارزهای دیجیتال محبوب (USD)**:\n\n"
+            for coin in result["popular"]:
+                change_emoji = "📈" if coin["change_percent_24h"] >= 0 else "📉"
+                change_sign = "+" if coin["change_percent_24h"] >= 0 else ""
+                message += (
+                    f"• {coin['name']} ({coin['symbol']}): ${coin['price_usd']:,.2f} "
+                    f"{change_emoji} {change_sign}{coin['change_percent_24h']:.2f}%\n"
+                )
+            message += f"\n🕐 زمان: {result['timestamp']}"
+        else:
+            message = f"❌ خطا در دریافت داده: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_glass_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
+            reply_markup=GlassUI.get_price_glass_keyboard()
+        )
+
+async def show_crypto_irr_prices(query):
+    """Show crypto prices in IRR"""
+    try:
+        result = await price_tracker._get_crypto_irr_data()
+        if result["success"] and result.get("data"):
+            message = "🌐 **ارزهای دیجیتال (IRR)**:\n\n"
+            for name, crypto_data in result["data"].items():
+                price = crypto_data["price_rial"]
+                change_percent = crypto_data["change_percent"]
+                change_value = crypto_data["change_value_tether"]
+                
+                if price is not None:
+                    change_emoji = "📈" if change_percent and change_percent >= 0 else "📉"
+                    change_sign = "+" if change_percent and change_percent >= 0 else ""
+                    change_text = f"{change_sign}{change_percent:.2f}%" if change_percent is not None else "نامشخص"
+                    message += f"• {name}: {price:,.0f} {change_emoji} {change_text} ({change_value})\n"
+                else:
+                    message += f"• {name}: نامشخص ({change_value})\n"
+            message += f"\n🕐 زمان: {result['timestamp']}"
+        else:
+            message = f"❌ خطا در دریافت داده: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_glass_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
+            reply_markup=GlassUI.get_price_glass_keyboard()
+        )
+
+async def show_tgju_prices(query):
+    """Show TGJU asset prices"""
+    try:
+        result = await price_tracker._get_tgju_data()
+        if result["success"] and result.get("data"):
+            message = "🏦 **دارایی‌ها (IRR)**:\n\n"
+            for title, asset_data in result["data"].items():
+                price = asset_data["price"]
+                change = asset_data["change"]
+                if price is not None:
+                    message += f"• {title}: {price:,.0f} ({change})\n"
+                else:
+                    message += f"• {title}: نامشخص ({change})\n"
+            message += f"\n🕐 زمان: {result['timestamp']}"
+        else:
+            message = f"❌ خطا در دریافت داده: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_glass_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
+            reply_markup=GlassUI.get_price_glass_keyboard()
+        )
+
+async def show_all_prices(query):
+    """Show all integrated prices"""
+    try:
+        result = await price_tracker.get_integrated_price_data()
+        message = price_tracker.format_integrated_price_message(result)
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_glass_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
+            reply_markup=GlassUI.get_price_glass_keyboard()
+        )
+
+async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """دستور قیمت - نمایش همه قیمت‌ها"""
+    try:
+        result = await price_tracker.get_integrated_price_data()
+        message = price_tracker.format_integrated_price_message(result)
+        
+        await update.message.reply_text(
+            message,
+            reply_markup=GlassUI.get_price_glass_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
+            reply_markup=GlassUI.get_back_to_main_keyboard()
+        )
+
 # ---- اجرای برنامه ----
 def main():
     app = ApplicationBuilder().token("8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ").build()
@@ -621,12 +757,14 @@ def main():
     
     # Command handlers
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("restart", restart_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("basket", basket_command))
     app.add_handler(CommandHandler("popular", popular_command))
     app.add_handler(CommandHandler("menu", menu_command))
     app.add_handler(CommandHandler("settings", settings_command))
     app.add_handler(CommandHandler("admin", admin_command))
+    app.add_handler(CommandHandler("price", price_command))
     
     # Callback and message handlers
     app.add_handler(CallbackQueryHandler(handle_menu))

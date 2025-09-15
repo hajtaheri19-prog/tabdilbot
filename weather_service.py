@@ -34,7 +34,7 @@ class WeatherService:
         """Get current weather for a location"""
         # Check cache
         cache_key = f"weather_current_{location}_{units}_{datetime.now().strftime('%Y%m%d%H')}"
-        cached_weather = self.db.get_cached_response(cache_key)
+        cached_weather = self.db.get_from_cache(cache_key)
         
         if cached_weather:
             try:
@@ -48,7 +48,7 @@ class WeatherService:
                 result = await self._get_openweather_current(location, units)
                 if result["success"]:
                     # Cache for 1 hour
-                    self.db.cache_api_response(cache_key, json.dumps(result), 60)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 60)
                     return result
             except Exception as e:
                 logger.warning(f"OpenWeather API failed: {e}")
@@ -58,7 +58,7 @@ class WeatherService:
             try:
                 result = await self._get_weatherapi_current(location, units)
                 if result["success"]:
-                    self.db.cache_api_response(cache_key, json.dumps(result), 60)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 60)
                     return result
             except Exception as e:
                 logger.warning(f"WeatherAPI failed: {e}")
@@ -145,7 +145,7 @@ class WeatherService:
         """Get weather forecast"""
         # Check cache
         cache_key = f"weather_forecast_{location}_{days}_{units}_{datetime.now().strftime('%Y%m%d%H')}"
-        cached_forecast = self.db.get_cached_response(cache_key)
+        cached_forecast = self.db.get_from_cache(cache_key)
         
         if cached_forecast:
             try:
@@ -159,7 +159,7 @@ class WeatherService:
                 result = await self._get_openweather_forecast(location, days, units)
                 if result["success"]:
                     # Cache for 3 hours
-                    self.db.cache_api_response(cache_key, json.dumps(result), 180)
+                    self.db.add_to_cache(cache_key, json.dumps(result), 180)
                     return result
             except Exception as e:
                 logger.warning(f"OpenWeather forecast API failed: {e}")

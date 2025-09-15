@@ -393,7 +393,7 @@ class Database:
                 expires_at = datetime.now() + timedelta(minutes=expires_in_minutes)
                 cursor.execute("""
                     INSERT OR REPLACE INTO api_cache 
-                    (cache_key, cache_data, expires_at)
+                    (cache_key, data, expires_at)
                     VALUES (?, ?, ?)
                 """, (cache_key, cache_data, expires_at.isoformat()))
                 conn.commit()
@@ -408,7 +408,7 @@ class Database:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT cache_data FROM api_cache 
+                    SELECT data FROM api_cache 
                     WHERE cache_key = ? AND expires_at > CURRENT_TIMESTAMP
                 """, (cache_key,))
                 
