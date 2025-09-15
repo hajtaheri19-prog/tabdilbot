@@ -3,6 +3,7 @@ import requests
 import jdatetime
 from hijridate import Gregorian
 from babel.numbers import format_decimal
+from typing import Dict, Any
 
 from telegram import (
     Update, InlineKeyboardButton,
@@ -21,6 +22,7 @@ from price_tracker import PriceTracker
 from currency_converter import CurrencyConverter
 from weather_service import WeatherService
 from translation_service import TranslationService
+from smart_text_processor import SmartTextProcessor
 from tabdila_pro.prices import fetch_mofid_basket, get_popular_crypto
 
 # Try to import admin services (optional)
@@ -49,6 +51,7 @@ price_tracker = PriceTracker(db)
 currency_converter = CurrencyConverter(db)
 weather_service = WeatherService(db)
 translation_service = TranslationService(db)
+smart_processor = SmartTextProcessor()
 
 # Initialize admin services if available
 if ADMIN_AVAILABLE:
@@ -72,11 +75,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tools_keyboard = GlassUI.get_tools_glass_keyboard()
     await update.message.reply_text(welcome_text, reply_markup=tools_keyboard, parse_mode='Markdown')
 
-    # Show main keyboard with mini app and restart
-    main_keyboard = GlassUI.get_main_glass_keyboard()
+    # Show permanent reply keyboard with mini app and restart
+    permanent_keyboard = GlassUI.get_permanent_reply_keyboard()
     await update.message.reply_text(
         "🚀 برای دسترسی سریع:",
-        reply_markup=main_keyboard
+        reply_markup=permanent_keyboard
     )
 
 async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -85,8 +88,23 @@ async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id in user_states:
         del user_states[user_id]
-    # Show same flow as start
-    await start(update, context)
+    
+    # Register user in database
+    db.register_user(user_id, update.message.from_user.username, 
+                     update.message.from_user.first_name, 
+                     update.message.from_user.last_name)
+    
+    # Show welcome message with tools keyboard
+    welcome_text = GlassUI.format_glass_welcome_message()
+    tools_keyboard = GlassUI.get_tools_glass_keyboard()
+    await update.message.reply_text(welcome_text, reply_markup=tools_keyboard, parse_mode='Markdown')
+
+    # Show permanent reply keyboard with mini app and restart
+    permanent_keyboard = GlassUI.get_permanent_reply_keyboard()
+    await update.message.reply_text(
+        "🚀 برای دسترسی سریع:",
+        reply_markup=permanent_keyboard
+    )
 
 # ---- هندل کلیک منو ----
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -411,25 +429,44 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # به‌روزرسانی فعالیت کاربر
     db.update_user_activity(user_id)
     
+    # Handle restart button press
+    if text == "🔄 شروع مجدد":
+        await restart_command(update, context)
+        return
+    
     # اگر کاربر در حالت خاصی نیست، سعی کن خودکار تشخیص بده
     if user_id not in user_states:
-        # تشخیص خودکار نوع درخواست
-        if any(word in text.lower() for word in ['usd', 'eur', 'gbp', 'irr', 'to']):
-            await convert_currency(update, text)
-        elif any(word in text.lower() for word in ['km', 'mile', 'kg', 'lb', 'celsius', 'fahrenheit']):
-            await convert_unit(update, text)
-        elif any(word in text.lower() for word in ['2024', '2025', '2023', '/', '-']):
-            await convert_date(update, text)
-        elif any(word in text.lower() for word in ['btc', 'eth', 'gold', 'silver', 'oil']):
-            await get_price(update, text)
+        # تشخیص هوشمند نوع درخواست
+        detection_result = smart_processor.detect_request_type(text)
+        
+        if detection_result['type'] != 'unknown' and detection_result['confidence'] > 0.6:
+            # پردازش بر اساس نوع تشخیص داده شده
+            if detection_result['type'] == 'currency':
+                await process_smart_currency_conversion(update, detection_result['data'])
+            elif detection_result['type'] == 'unit':
+                await process_smart_unit_conversion(update, detection_result['data'])
+            elif detection_result['type'] == 'date':
+                await process_smart_date_conversion(update, detection_result['data'])
+            elif detection_result['type'] == 'price':
+                await process_smart_price_request(update, detection_result['data'])
+            elif detection_result['type'] == 'weather':
+                await process_smart_weather_request(update, detection_result['data'])
+            elif detection_result['type'] == 'calculation':
+                await process_smart_calculation(update, detection_result['data'])
+            elif detection_result['type'] == 'translation':
+                await process_smart_translation(update, detection_result['data'])
         else:
+            # اگر تشخیص داده نشد، راهنمایی نمایش بده
             await update.message.reply_text(
                 "🔍 نمی‌تونم نوع درخواست شما رو تشخیص بدم!\n\n"
                 "لطفاً از منوی اصلی استفاده کنید یا یکی از فرمت‌های زیر را امتحان کنید:\n\n"
-                "💎 تبدیل ارز: `100 USD to IRR`\n"
-                "🔮 تبدیل واحد: `10 km to mile`\n"
-                "✨ تبدیل تاریخ: `2024-01-15`\n"
-                "💫 قیمت: `BTC` یا `GOLD`",
+                "💎 تبدیل ارز: `100 USD to IRR` یا `1 بیت کوین به دلار`\n"
+                "🔮 تبدیل واحد: `10 km to mile` یا `5 کیلوگرم به پوند`\n"
+                "✨ تبدیل تاریخ: `2024-01-15` یا `15/01/1403`\n"
+                "💫 قیمت: `BTC` یا `طلا` یا `AAPL`\n"
+                "🌤️ آب و هوا: `تهران` یا `آب و هوای اصفهان`\n"
+                "🧮 محاسبه: `2 + 3 * 4` یا `sin(pi/2)`\n"
+                "🌐 ترجمه: `Hello world` یا `سلام دنیا`",
                 parse_mode='Markdown'
             )
         return
@@ -463,6 +500,184 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ خطا: {e}")
         print(f"Error in handle_message: {e}")
 
+# ---- پردازشگرهای هوشمند ----
+async def process_smart_currency_conversion(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند تبدیل ارز"""
+    try:
+        if data.get('amount') and data.get('from_currency') and data.get('to_currency'):
+            result = await currency_converter.convert_currency(
+                data['amount'], 
+                data['from_currency'], 
+                data['to_currency']
+            )
+            if result.get("success"):
+                formatted = format_decimal(result["result"], locale="fa")
+                await update.message.reply_text(
+                    f"💱 **تبدیل ارز**\n\n"
+                    f"💰 {data['amount']} {data['from_currency']} = {formatted} {data['to_currency']}\n"
+                    f"📊 نرخ: {result['rate']:.6f}\n"
+                    f"🕐 زمان: {result['timestamp']}",
+                    parse_mode='Markdown',
+                    reply_markup=GlassUI.get_permanent_reply_keyboard()
+                )
+            else:
+                await update.message.reply_text(
+                    f"❌ خطا در تبدیل ارز: {result.get('error', 'نامشخص')}",
+                    reply_markup=GlassUI.get_permanent_reply_keyboard()
+                )
+        else:
+            # اگر داده کامل نیست، پیام راهنما بده
+            await update.message.reply_text(
+                "💱 **تبدیل ارز**\n\n"
+                "لطفاً فرمت صحیح را استفاده کنید:\n"
+                "`100 USD to IRR`\n"
+                "`1 BTC to USD`\n"
+                "`500 یورو به ریال`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش تبدیل ارز: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_unit_conversion(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند تبدیل واحد"""
+    try:
+        if data.get('amount') and data.get('from_unit') and data.get('to_unit'):
+            # اینجا باید از unit_converter استفاده کنی
+            await update.message.reply_text(
+                f"📏 **تبدیل {data['unit_type']}**\n\n"
+                f"در حال پردازش: {data['amount']} {data['from_unit']} به {data['to_unit']}",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+        else:
+            await update.message.reply_text(
+                f"📏 **تبدیل {data['unit_type']}**\n\n"
+                "لطفاً فرمت صحیح را استفاده کنید:\n"
+                "`10 km to mile`\n"
+                "`5 کیلوگرم به پوند`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش تبدیل واحد: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_date_conversion(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند تبدیل تاریخ"""
+    try:
+        date_string = data.get('date_string', '')
+        if date_string:
+            await convert_date(update, date_string)
+        else:
+            await update.message.reply_text(
+                "📅 **تبدیل تاریخ**\n\n"
+                "لطفاً فرمت صحیح را استفاده کنید:\n"
+                "`2024-01-15`\n"
+                "`15/01/1403`\n"
+                "`15 Jan 2024`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش تبدیل تاریخ: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_price_request(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند درخواست قیمت"""
+    try:
+        symbols = data.get('all_symbols', [])
+        if symbols:
+            # اولین نماد را برای قیمت درخواست کن
+            await get_price(update, symbols[0])
+        else:
+            await update.message.reply_text(
+                "💫 **قیمت لحظه‌ای**\n\n"
+                "لطفاً نماد مورد نظر را وارد کنید:\n"
+                "`BTC` - بیت کوین\n"
+                "`طلا` - قیمت طلا\n"
+                "`AAPL` - سهام اپل",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش درخواست قیمت: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_weather_request(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند درخواست آب و هوا"""
+    try:
+        location = data.get('location', '')
+        if location:
+            await get_weather(update, location)
+        else:
+            await update.message.reply_text(
+                "🌤️ **آب و هوا**\n\n"
+                "لطفاً نام شهر را وارد کنید:\n"
+                "`تهران`\n"
+                "`آب و هوای اصفهان`\n"
+                "`London`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش درخواست آب و هوا: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_calculation(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند محاسبه"""
+    try:
+        expression = data.get('expression', '')
+        if expression:
+            await calculate(update, expression)
+        else:
+            await update.message.reply_text(
+                "🧮 **ماشین حساب**\n\n"
+                "لطفاً عبارت ریاضی را وارد کنید:\n"
+                "`2 + 3 * 4`\n"
+                "`sin(pi/2)`\n"
+                "`sqrt(16)`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش محاسبه: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
+async def process_smart_translation(update: Update, data: Dict[str, Any]):
+    """پردازش هوشمند ترجمه"""
+    try:
+        text_to_translate = data.get('text', '')
+        if text_to_translate:
+            await translate_text(update, text_to_translate)
+        else:
+            await update.message.reply_text(
+                "🌐 **ترجمه**\n\n"
+                "لطفاً متن مورد نظر را وارد کنید:\n"
+                "`Hello world`\n"
+                "`سلام دنیا`",
+                parse_mode='Markdown',
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ خطا در پردازش ترجمه: {str(e)}",
+            reply_markup=GlassUI.get_permanent_reply_keyboard()
+        )
+
 # ---- تبدیل ارز ----
 async def convert_currency(update: Update, text: str):
     try:
@@ -473,12 +688,12 @@ async def convert_currency(update: Update, text: str):
             formatted = format_decimal(result["result"], locale="fa")
             await update.message.reply_text(
                 f"{amount} {from_curr.upper()} = {formatted} {to_curr.upper()}",
-                reply_markup=GlassUI.get_back_to_main_keyboard()
+                reply_markup=GlassUI.get_permanent_reply_keyboard()
             )
         else:
-            await update.message.reply_text(f"❌ {result.get('error','داده پیدا نشد')}", reply_markup=GlassUI.get_back_to_main_keyboard())
+            await update.message.reply_text(f"❌ {result.get('error','داده پیدا نشد')}", reply_markup=GlassUI.get_permanent_reply_keyboard())
     except Exception:
-        await update.message.reply_text("❌ فرمت اشتباه. مثال: 100 USD to IRR", reply_markup=GlassUI.get_back_to_main_keyboard())
+        await update.message.reply_text("❌ فرمت اشتباه. مثال: 100 USD to IRR", reply_markup=GlassUI.get_permanent_reply_keyboard())
 
 # ---- تبدیل واحد ----
 async def convert_unit(update: Update, text: str):
@@ -922,6 +1137,7 @@ def main():
         try:
             await app_.bot.set_chat_menu_button(
                 menu_button=MenuButtonWebApp(
+                    text="🚀 مینی‌اپ",
                     web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")
                 )
             )

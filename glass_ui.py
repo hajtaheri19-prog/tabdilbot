@@ -566,4 +566,20 @@ class GlassUI:
     def get_glass_info_message(message: str) -> str:
         """پیام اطلاعات شیشه‌ای"""
         return f"ℹ️ {message} 💡"
+    
+    @staticmethod
+    def get_permanent_reply_keyboard() -> ReplyKeyboardMarkup:
+        """کیبورد دائمی با دو دکمه - مینی‌اپ و شروع مجدد"""
+        keyboard = [
+            [
+                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")),
+                KeyboardButton("🔄 شروع مجدد")
+            ]
+        ]
+        return ReplyKeyboardMarkup(
+            keyboard, 
+            resize_keyboard=True, 
+            one_time_keyboard=False,  # False = دائمی
+            input_field_placeholder="پیام خود را بنویسید..."
+        )
 
