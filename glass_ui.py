@@ -73,7 +73,7 @@ class GlassUI:
             ],
             [
                 GlassUI.get_glass_button("🚀 مینی‌اپ پیشرفته", web_app=WebAppInfo(
-                    url="https://YOUR_DOMAIN_OR_VERCEL_APP"
+                    url="https://bot-nine-ochre.vercel.app/"
                 ))
             ]
         ]

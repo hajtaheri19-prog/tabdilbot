@@ -6,7 +6,7 @@ from babel.numbers import format_decimal
 
 from telegram import (
     Update, InlineKeyboardButton,
-    InlineKeyboardMarkup, WebAppInfo
+    InlineKeyboardMarkup, WebAppInfo, MenuButtonWebApp
 )
 from telegram.ext import (
     ApplicationBuilder, CommandHandler,
@@ -461,6 +461,18 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ---- اجرای برنامه ----
 def main():
     app = ApplicationBuilder().token("8308943984:AAGpg52VoSSpuwWRpVrDRZ-4SDA52__ybqQ").build()
+
+    async def setup_menu_button(app_):
+        try:
+            await app_.bot.set_chat_menu_button(
+                menu_button=MenuButtonWebApp(
+                    web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")
+                )
+            )
+        except Exception as e:
+            logging.warning(f"Failed to set menu button: {e}")
+
+    app.post_init = setup_menu_button
     
     # Command handlers
     app.add_handler(CommandHandler("start", start))

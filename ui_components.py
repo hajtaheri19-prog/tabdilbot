@@ -37,7 +37,7 @@ class UIComponents:
             ],
             [
                 InlineKeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(
-                    url="https://YOUR_DOMAIN_OR_VERCEL_APP"
+                    url="https://bot-nine-ochre.vercel.app/"
                 ))
             ]
         ]
