@@ -67,28 +67,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                      update.message.from_user.first_name, 
                      update.message.from_user.last_name)
     
-    # Get glass keyboard and show welcome
-    reply_markup = GlassUI.get_main_glass_keyboard()
+    # Show welcome message with tools keyboard
     welcome_text = GlassUI.format_glass_welcome_message()
-    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode='Markdown')
+    tools_keyboard = GlassUI.get_tools_glass_keyboard()
+    await update.message.reply_text(welcome_text, reply_markup=tools_keyboard, parse_mode='Markdown')
 
-    # Show feedback/report buttons
-    try:
-        await update.message.reply_text(
-            "اگر نظری داری یا مشکلی دیدی، از دکمه‌های زیر استفاده کن:",
-            reply_markup=GlassUI.get_feedback_glass_keyboard()
-        )
-    except Exception:
-        pass
-
-    # Also show quick reply keyboard with WebApp + restart near typing field
-    try:
-        await update.message.reply_text(
-            "✳️ از دکمه‌های سریع پایین هم می‌تونی استفاده کنی:",
-            reply_markup=GlassUI.get_quick_keyboard_with_webapp()
-        )
-    except Exception:
-        pass
+    # Show main keyboard with mini app and restart
+    main_keyboard = GlassUI.get_main_glass_keyboard()
+    await update.message.reply_text(
+        "🚀 برای دسترسی سریع:",
+        reply_markup=main_keyboard
+    )
 
 async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """دستور شروع مجدد"""
@@ -160,6 +149,27 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_tgju_prices(query)
     elif choice == "price_all":
         await show_all_prices(query)
+    elif choice == "price_bitcoin":
+        await show_bitcoin_price(query)
+    elif choice == "price_gold_18k":
+        await show_gold_18k_price(query)
+    elif choice == "price_silver":
+        await show_silver_price(query)
+    elif choice == "price_gold_ounce":
+        await show_gold_ounce_price(query)
+    elif choice == "price_crypto_menu":
+        reply_markup = GlassUI.get_price_glass_keyboard()
+        await query.edit_message_text(
+            "💰 **ارزهای دیجیتال**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "price_stocks":
+        await query.edit_message_text(
+            "📈 **قیمت سهام**\n\nنماد سهام را ارسال کنید:\nمثال: `AAPL`, `TSLA`, `MSFT`",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
+            parse_mode='Markdown'
+        )
     elif choice == "weather":
         await query.edit_message_text(
             "🌌 **آب و هوا**\n\nنام شهر را ارسال کنید یا موقعیت خود را به اشتراک بگذارید",
@@ -211,9 +221,62 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
     elif choice == "back_to_main":
-        reply_markup = GlassUI.get_main_glass_keyboard()
+        reply_markup = GlassUI.get_tools_glass_keyboard()
         await query.edit_message_text(
             GlassUI.format_glass_welcome_message(),
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "currency_menu":
+        reply_markup = GlassUI.get_currency_submenu_keyboard()
+        await query.edit_message_text(
+            "💎 **تبدیل ارز**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "unit_menu":
+        reply_markup = GlassUI.get_unit_submenu_keyboard()
+        await query.edit_message_text(
+            "🔮 **تبدیل واحد**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "date_menu":
+        reply_markup = GlassUI.get_date_submenu_keyboard()
+        await query.edit_message_text(
+            "✨ **تبدیل تاریخ**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "price_menu":
+        reply_markup = GlassUI.get_price_submenu_keyboard()
+        await query.edit_message_text(
+            "💫 **قیمت لحظه‌ای**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    elif choice == "weather_menu":
+        await query.edit_message_text(
+            "🌌 **آب و هوا**\n\nنام شهر را ارسال کنید یا موقعیت خود را به اشتراک بگذارید",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
+            parse_mode='Markdown'
+        )
+    elif choice == "calculator_menu":
+        await query.edit_message_text(
+            "🧿 **ماشین حساب**\n\nعبارت ریاضی را وارد کنید:\nمثال: `2 + 3 * 4` یا `sin(pi/2)`",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
+            parse_mode='Markdown'
+        )
+    elif choice == "translate_menu":
+        await query.edit_message_text(
+            "🔮 **ترجمه**\n\nمتن مورد نظر را ارسال کنید",
+            reply_markup=GlassUI.get_back_to_main_keyboard(),
+            parse_mode='Markdown'
+        )
+    elif choice == "settings_menu":
+        reply_markup = GlassUI.get_settings_glass_keyboard()
+        await query.edit_message_text(
+            "⚡ **تنظیمات**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
             reply_markup=reply_markup,
             parse_mode='Markdown'
         )
@@ -737,6 +800,118 @@ async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             f"❌ خطا در دریافت قیمت‌ها: {str(e)}",
             reply_markup=GlassUI.get_back_to_main_keyboard()
+        )
+
+async def show_bitcoin_price(query):
+    """Show Bitcoin price"""
+    try:
+        result = await price_tracker.get_crypto_price("BTC")
+        if result["success"]:
+            price = result["price"]
+            change = result.get("change_24h", 0)
+            change_emoji = "📈" if change >= 0 else "📉"
+            change_sign = "+" if change >= 0 else ""
+            
+            message = f"₿ **بیت کوین (Bitcoin)**\n\n"
+            message += f"💰 قیمت: ${price:,.2f}\n"
+            message += f"📊 تغییر 24h: {change_emoji} {change_sign}{change:.2f}%\n"
+            message += f"🕐 زمان: {result.get('timestamp', 'نامشخص')}"
+        else:
+            message = f"❌ خطا در دریافت قیمت بیت کوین: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_submenu_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت بیت کوین: {str(e)}",
+            reply_markup=GlassUI.get_price_submenu_keyboard()
+        )
+
+async def show_gold_18k_price(query):
+    """Show 18k Gold price"""
+    try:
+        result = await price_tracker.get_commodity_price("GOLD")
+        if result["success"]:
+            price = result["price"]
+            change = result.get("change_24h", 0)
+            change_emoji = "📈" if change >= 0 else "📉"
+            change_sign = "+" if change >= 0 else ""
+            
+            message = f"🥇 **طلای 18 عیار**\n\n"
+            message += f"💰 قیمت: ${price:,.2f} per ounce\n"
+            message += f"📊 تغییر 24h: {change_emoji} {change_sign}{change:.2f}%\n"
+            message += f"🕐 زمان: {result.get('timestamp', 'نامشخص')}"
+        else:
+            message = f"❌ خطا در دریافت قیمت طلا: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_submenu_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت طلا: {str(e)}",
+            reply_markup=GlassUI.get_price_submenu_keyboard()
+        )
+
+async def show_silver_price(query):
+    """Show Silver price"""
+    try:
+        result = await price_tracker.get_commodity_price("SILVER")
+        if result["success"]:
+            price = result["price"]
+            change = result.get("change_24h", 0)
+            change_emoji = "📈" if change >= 0 else "📉"
+            change_sign = "+" if change >= 0 else ""
+            
+            message = f"🥈 **نقره (Silver)**\n\n"
+            message += f"💰 قیمت: ${price:,.2f} per ounce\n"
+            message += f"📊 تغییر 24h: {change_emoji} {change_sign}{change:.2f}%\n"
+            message += f"🕐 زمان: {result.get('timestamp', 'نامشخص')}"
+        else:
+            message = f"❌ خطا در دریافت قیمت نقره: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_submenu_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت نقره: {str(e)}",
+            reply_markup=GlassUI.get_price_submenu_keyboard()
+        )
+
+async def show_gold_ounce_price(query):
+    """Show Gold ounce price"""
+    try:
+        result = await price_tracker.get_commodity_price("GOLD")
+        if result["success"]:
+            price = result["price"]
+            change = result.get("change_24h", 0)
+            change_emoji = "📈" if change >= 0 else "📉"
+            change_sign = "+" if change >= 0 else ""
+            
+            message = f"💎 **انس طلا (Gold Ounce)**\n\n"
+            message += f"💰 قیمت: ${price:,.2f} per ounce\n"
+            message += f"📊 تغییر 24h: {change_emoji} {change_sign}{change:.2f}%\n"
+            message += f"🕐 زمان: {result.get('timestamp', 'نامشخص')}"
+        else:
+            message = f"❌ خطا در دریافت قیمت انس طلا: {result.get('error', 'نامشخص')}"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=GlassUI.get_price_submenu_keyboard(),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        await query.edit_message_text(
+            f"❌ خطا در دریافت قیمت انس طلا: {str(e)}",
+            reply_markup=GlassUI.get_price_submenu_keyboard()
         )
 
 # ---- اجرای برنامه ----

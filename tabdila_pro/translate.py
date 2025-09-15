@@ -40,3 +40,4 @@ def translate(text: str, src: str = "auto", dest: str = "en") -> Dict[str, Any]:
 
 
 
+

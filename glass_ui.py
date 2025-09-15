@@ -355,6 +355,129 @@ class GlassUI:
         """
 
     @staticmethod
+    def get_tools_glass_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد ابزارهای شیشه‌ای"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("💎 ارز", "currency_menu", emoji="💎"),
+                GlassUI.get_glass_button("🔮 واحد", "unit_menu", emoji="🔮")
+            ],
+            [
+                GlassUI.get_glass_button("✨ تاریخ", "date_menu", emoji="✨"),
+                GlassUI.get_glass_button("💫 قیمت", "price_menu", emoji="💫")
+            ],
+            [
+                GlassUI.get_glass_button("🌌 هوا", "weather_menu", emoji="🌌"),
+                GlassUI.get_glass_button("🧿 حساب", "calculator_menu", emoji="🧿")
+            ],
+            [
+                GlassUI.get_glass_button("🔮 ترجمه", "translate_menu", emoji="🔮"),
+                GlassUI.get_glass_button("⚡ تنظیمات", "settings_menu", emoji="⚡")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    @staticmethod
+    def get_price_submenu_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد زیرمنوی قیمت‌گذاری"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("₿ بیت کوین", "price_bitcoin", emoji="₿"),
+                GlassUI.get_glass_button("🥇 طلای 18 عیار", "price_gold_18k", emoji="🥇")
+            ],
+            [
+                GlassUI.get_glass_button("🥈 نقره", "price_silver", emoji="🥈"),
+                GlassUI.get_glass_button("💎 انس طلا", "price_gold_ounce", emoji="💎")
+            ],
+            [
+                GlassUI.get_glass_button("💰 ارزهای دیجیتال", "price_crypto_menu", emoji="💰"),
+                GlassUI.get_glass_button("📈 سهام", "price_stocks", emoji="📈")
+            ],
+            [
+                GlassUI.get_glass_button("🏦 دارایی‌ها (TGJU)", "price_tgju", emoji="🏦"),
+                GlassUI.get_glass_button("📊 همه قیمت‌ها", "price_all", emoji="📊")
+            ],
+            [
+                GlassUI.get_glass_button("🔙 بازگشت به منو", "back_to_main", emoji="🔙")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    @staticmethod
+    def get_currency_submenu_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد زیرمنوی ارز"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("💵 دلار آمریکا", "currency_usd", emoji="💵"),
+                GlassUI.get_glass_button("💶 یورو", "currency_eur", emoji="💶")
+            ],
+            [
+                GlassUI.get_glass_button("💷 پوند انگلیس", "currency_gbp", emoji="💷"),
+                GlassUI.get_glass_button("💴 ین ژاپن", "currency_jpy", emoji="💴")
+            ],
+            [
+                GlassUI.get_glass_button("₿ بیت کوین", "currency_btc", emoji="₿"),
+                GlassUI.get_glass_button("Ξ اتریوم", "currency_eth", emoji="Ξ")
+            ],
+            [
+                GlassUI.get_glass_button("💱 تبدیل ارز", "currency_convert", emoji="💱"),
+                GlassUI.get_glass_button("📈 نرخ ارز", "exchange_rates", emoji="📈")
+            ],
+            [
+                GlassUI.get_glass_button("🔙 بازگشت به منو", "back_to_main", emoji="🔙")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    @staticmethod
+    def get_date_submenu_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد زیرمنوی تاریخ"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("📅 امروز", "date_today", emoji="📅"),
+                GlassUI.get_glass_button("📆 این ماه", "date_this_month", emoji="📆")
+            ],
+            [
+                GlassUI.get_glass_button("🗓️ تقویم شمسی", "calendar_persian", emoji="🗓️"),
+                GlassUI.get_glass_button("📅 تقویم میلادی", "calendar_gregorian", emoji="📅")
+            ],
+            [
+                GlassUI.get_glass_button("🌙 تقویم قمری", "calendar_hijri", emoji="🌙"),
+                GlassUI.get_glass_button("⏰ ساعت جهانی", "world_time", emoji="⏰")
+            ],
+            [
+                GlassUI.get_glass_button("🔙 بازگشت به منو", "back_to_main", emoji="🔙")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    @staticmethod
+    def get_unit_submenu_keyboard() -> InlineKeyboardMarkup:
+        """کیبورد زیرمنوی واحد"""
+        keyboard = [
+            [
+                GlassUI.get_glass_button("📏 طول", "unit_length", emoji="📏"),
+                GlassUI.get_glass_button("⚖️ وزن", "unit_weight", emoji="⚖️")
+            ],
+            [
+                GlassUI.get_glass_button("🌡️ دما", "unit_temperature", emoji="🌡️"),
+                GlassUI.get_glass_button("📦 حجم", "unit_volume", emoji="📦")
+            ],
+            [
+                GlassUI.get_glass_button("📐 مساحت", "unit_area", emoji="📐"),
+                GlassUI.get_glass_button("⏰ زمان", "unit_time", emoji="⏰")
+            ],
+            [
+                GlassUI.get_glass_button("💨 سرعت", "unit_speed", emoji="💨"),
+                GlassUI.get_glass_button("💾 داده", "unit_data", emoji="💾")
+            ],
+            [
+                GlassUI.get_glass_button("🔙 بازگشت به منو", "back_to_main", emoji="🔙")
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    @staticmethod
     def get_feedback_glass_keyboard() -> InlineKeyboardMarkup:
         """کیبورد شیشه‌ای پیشنهادات و گزارش خرابی"""
         keyboard = [
