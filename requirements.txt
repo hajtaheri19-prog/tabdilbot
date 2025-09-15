@@ -6,3 +6,4 @@ hijri-converter
 babel
 pytz
 psutil
+beautifulsoup4

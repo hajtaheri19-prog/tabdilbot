@@ -20,6 +20,7 @@ from database import Database
 from price_tracker import PriceTracker
 from weather_service import WeatherService
 from translation_service import TranslationService
+from tabdila_pro.prices import fetch_mofid_basket, get_popular_crypto
 
 # Try to import admin services (optional)
 try:
@@ -75,6 +76,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
+    # Show feedback/report buttons
+    try:
+        await update.message.reply_text(
+            "اگر نظری داری یا مشکلی دیدی، از دکمه‌های زیر استفاده کن:",
+            reply_markup=GlassUI.get_feedback_glass_keyboard()
+        )
+    except Exception:
+        pass
+
     # Also show quick reply keyboard with WebApp button near typing field
     try:
         await update.message.reply_text(
@@ -95,7 +105,22 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Update user activity
     db.update_user_activity(user_id)
 
-    if choice == "currency":
+    if choice == "restart":
+        reply_markup = GlassUI.get_main_glass_keyboard()
+        await query.edit_message_text(
+            GlassUI.format_glass_welcome_message(),
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+        # Send feedback keyboard as a new message
+        try:
+            await query.message.reply_text(
+                "اگر نظری داری یا مشکلی دیدی، از دکمه‌های زیر استفاده کن:",
+                reply_markup=GlassUI.get_feedback_glass_keyboard()
+            )
+        except Exception:
+            pass
+    elif choice == "currency":
         reply_markup = GlassUI.get_currency_glass_keyboard()
         await query.edit_message_text(
             "💎 **تبدیل ارز**\n\nیکی از گزینه‌های زیر را انتخاب کنید:",
@@ -158,6 +183,18 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "💥 **هشدارها**\n\nبرای مدیریت هشدارها، نام ارز یا کالا را ارسال کنید",
             reply_markup=GlassUI.get_back_to_main_keyboard(),
+            parse_mode='Markdown'
+        )
+    elif choice == "feedback":
+        user_states[user_id] = "feedback"
+        await query.edit_message_text(
+            "📝 لطفاً پیشنهاد یا انتقاد خودت رو بنویس و بفرست.",
+            parse_mode='Markdown'
+        )
+    elif choice == "report_bug":
+        user_states[user_id] = "report_bug"
+        await query.edit_message_text(
+            "🐞 لطفاً مشکل یا باگ رو با جزئیات بنویس و بفرست.",
             parse_mode='Markdown'
         )
     elif choice == "back_to_main":
@@ -338,6 +375,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await calculate(update, text)
         elif choice == "translate":
             await translate_text(update, text)
+        elif choice == "feedback":
+            db.add_notification(user_id, "feedback", text, {"source": "inline"})
+            await update.message.reply_text("✅ ممنون! بازخوردت ثبت شد.", reply_markup=GlassUI.get_back_to_main_keyboard())
+            del user_states[user_id]
+        elif choice == "report_bug":
+            db.add_notification(user_id, "bug_report", text, {"source": "inline"})
+            await update.message.reply_text("✅ گزارش خرابی دریافت شد. به‌زودی بررسی می‌کنیم.", reply_markup=GlassUI.get_back_to_main_keyboard())
+            del user_states[user_id]
     except Exception as e:
         await update.message.reply_text(f"❌ خطا: {e}")
         print(f"Error in handle_message: {e}")
@@ -414,9 +459,42 @@ async def get_weather(update: Update, text: str):
 
 # ---- ماشین حساب ----
 async def calculate(update: Update, text: str):
+    import ast
+    import operator as op
+
+    # اپراتورهای مجاز
+    allowed_operators = {
+        ast.Add: op.add,
+        ast.Sub: op.sub,
+        ast.Mult: op.mul,
+        ast.Div: op.truediv,
+        ast.Pow: op.pow,
+        ast.Mod: op.mod,
+        ast.USub: op.neg,
+        ast.UAdd: op.pos,
+    }
+
+    def _eval(node):
+        if isinstance(node, ast.Num):
+            return node.n
+        if isinstance(node, ast.BinOp):
+            left = _eval(node.left)
+            right = _eval(node.right)
+            operator = allowed_operators.get(type(node.op))
+            if operator is None:
+                raise ValueError("operator_not_allowed")
+            return operator(left, right)
+        if isinstance(node, ast.UnaryOp):
+            operand = _eval(node.operand)
+            operator = allowed_operators.get(type(node.op))
+            if operator is None:
+                raise ValueError("operator_not_allowed")
+            return operator(operand)
+        raise ValueError("expression_not_allowed")
+
     try:
-        # محاسبه ساده
-        result = eval(text)
+        expr = ast.parse(text, mode='eval').body
+        result = _eval(expr)
         await update.message.reply_text(
             f"🧿 **نتیجه محاسبه:**\n\n"
             f"`{text} = {result}`",
@@ -449,6 +527,43 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """دستور راهنما"""
     help_text = GlassUI.format_glass_help_message()
     await update.message.reply_text(help_text, parse_mode='Markdown')
+
+async def basket_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """نمایش سبد گران مفید (TGJU)"""
+    data = fetch_mofid_basket()
+    if not data.get("ok") and data.get("status") != "success":
+        # normalize both wrappers
+        err = data.get("error") or data.get("message") or "خطای نامشخص"
+        await update.message.reply_text(f"❌ خطا در دریافت داده: {err}")
+        return
+
+    # unify
+    payload = data.get("data") if "data" in data else data
+    if "data" in payload:
+        payload = payload["data"]
+
+    lines = ["📦 سبد گران مفید:"]
+    for k, v in payload.items():
+        price = v.get("price")
+        change = v.get("change")
+        lines.append(f"• {k}: {price} ({change})")
+
+    await update.message.reply_text("\n".join(lines), reply_markup=GlassUI.get_back_to_main_keyboard())
+
+async def popular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """قیمت محبوب‌ترین ارزهای دیجیتال"""
+    data = get_popular_crypto()
+    if not data.get("ok"):
+        await update.message.reply_text(f"❌ خطا: {data.get('error', 'نامشخص')}")
+        return
+    coins = data.get("popular", [])
+    if not coins:
+        await update.message.reply_text("داده‌ای یافت نشد")
+        return
+    lines = ["💹 محبوب‌ترین رمزارزها (USD):"]
+    for c in coins:
+        lines.append(f"• {c['symbol']}: ${c['price_usd']} ({c['change_percent_24h']}%)")
+    await update.message.reply_text("\n".join(lines), reply_markup=GlassUI.get_back_to_main_keyboard())
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """دستور منو"""
@@ -507,6 +622,8 @@ def main():
     # Command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("basket", basket_command))
+    app.add_handler(CommandHandler("popular", popular_command))
     app.add_handler(CommandHandler("menu", menu_command))
     app.add_handler(CommandHandler("settings", settings_command))
     app.add_handler(CommandHandler("admin", admin_command))

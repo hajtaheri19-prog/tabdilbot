@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "D:/bot/tel/__pycache__"
+		},
+		{
+			"path": "D:/bot/tel/venv"
+		},
+		{
+			"path": "D:/bot/tel/.venv"
+		}
+	],
+	"settings": {}
+}
