@@ -13,7 +13,7 @@
 
 ### 2. دکمه "Open" کنار باکس تایپ (Chat Menu Button)
 - **نوع:** `MenuButtonWebApp`
-- **متن:** "🚀 مینی‌اپ"
+- **متن:** "Open"
 - **URL:** `https://bot-nine-ochre.vercel.app/`
 - **وضعیت:** فعال برای تمام کاربران
 
@@ -115,7 +115,7 @@ async def setup():
     bot = Bot('YOUR_TOKEN')
     await bot.set_chat_menu_button(
         menu_button=MenuButtonWebApp(
-            text='🚀 مینی‌اپ',
+            text='Open',
             web_app=WebAppInfo(url='https://bot-nine-ochre.vercel.app/')
         )
     )
@@ -143,3 +143,4 @@ asyncio.run(setup())
 5. **کد بهینه و بدون باگ**
 
 همه چیز آماده برای استفاده است! 🚀
+
