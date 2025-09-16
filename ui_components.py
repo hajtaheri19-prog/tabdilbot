@@ -36,7 +36,7 @@ class UIComponents:
                 InlineKeyboardButton("🚨 هشدارها", callback_data="alerts")
             ],
             [
-                InlineKeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(
+                InlineKeyboardButton("Open", web_app=WebAppInfo(
                     url="https://bot-nine-ochre.vercel.app/"
                 ))
             ]

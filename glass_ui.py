@@ -53,7 +53,7 @@ class GlassUI:
         keyboard = [
             [
                 GlassUI.get_glass_button(
-                    "🚀 مینی‌اپ",
+                    "Open",
                     web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")
                 ),
                 GlassUI.get_glass_button("شروع مجدد", "restart", emoji="🔄")
