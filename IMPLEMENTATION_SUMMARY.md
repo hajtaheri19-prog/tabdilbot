@@ -4,7 +4,7 @@
 
 ### 1. کیبورد دائمی (Permanent Reply Keyboard)
 - **دو دکمه اصلی:**
-  - 🚀 مینی‌اپ - باز کردن WebApp در `https://bot-nine-ochre.vercel.app/`
+  - 🚀 مینی‌اپ - باز کردن WebApp در `https://tabdila.vercel.app/`
   - 🔄 شروع مجدد - ریست کردن گفتگو و بازگشت به منوی اصلی
 - **ویژگی‌ها:**
   - `resize_keyboard: true` - تنظیم خودکار اندازه دکمه‌ها
@@ -14,7 +14,7 @@
 ### 2. دکمه "Open" کنار باکس تایپ (Chat Menu Button)
 - **نوع:** `MenuButtonWebApp`
 - **متن:** "Open"
-- **URL:** `https://bot-nine-ochre.vercel.app/`
+- **URL:** `https://tabdila.vercel.app/`
 - **وضعیت:** فعال برای تمام کاربران
 
 ### 3. پردازشگر هوشمند متن (Smart Text Processor)
@@ -116,7 +116,7 @@ async def setup():
     await bot.set_chat_menu_button(
         menu_button=MenuButtonWebApp(
             text='Open',
-            web_app=WebAppInfo(url='https://bot-nine-ochre.vercel.app/')
+            web_app=WebAppInfo(url='https://tabdila.vercel.app/')
         )
     )
     await bot.close()

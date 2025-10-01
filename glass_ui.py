@@ -54,7 +54,7 @@ class GlassUI:
             [
                 GlassUI.get_glass_button(
                     "Open",
-                    web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")
+                    web_app=WebAppInfo(url="https://tabdila.vercel.app/")
                 ),
                 GlassUI.get_glass_button("شروع مجدد", "restart", emoji="🔄")
             ]
@@ -274,7 +274,7 @@ class GlassUI:
         """کیبورد سریع با دکمه مینی‌اپ برای نمایش کنار نوار تایپ"""
         keyboard = [
             [
-                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/"))
+                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://tabdila.vercel.app/"))
             ],
             [
                 KeyboardButton("💎 ارز"), KeyboardButton("🔮 واحد"), KeyboardButton("✨ تاریخ")
@@ -572,7 +572,7 @@ class GlassUI:
         """کیبورد دائمی با دو دکمه - مینی‌اپ و شروع مجدد"""
         keyboard = [
             [
-                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")),
+                KeyboardButton("🚀 مینی‌اپ", web_app=WebAppInfo(url="https://tabdila.vercel.app/")),
                 KeyboardButton("🔄 شروع مجدد")
             ]
         ]

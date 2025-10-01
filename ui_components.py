@@ -37,7 +37,7 @@ class UIComponents:
             ],
             [
                 InlineKeyboardButton("Open", web_app=WebAppInfo(
-                    url="https://bot-nine-ochre.vercel.app/"
+                    url="https://tabdila.vercel.app/"
                 ))
             ]
         ]
