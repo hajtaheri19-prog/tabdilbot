@@ -1137,8 +1137,8 @@ def main():
         try:
             await app_.bot.set_chat_menu_button(
                 menu_button=MenuButtonWebApp(
-                    text="🚀 مینی‌اپ",
-                    web_app=WebAppInfo(url="https://bot-nine-ochre.vercel.app/")
+                    text="Open",
+                    web_app=WebAppInfo(url="https://tabdila.vercel.app/")
                 )
             )
         except Exception as e:
